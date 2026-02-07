@@ -32,8 +32,8 @@ export default function NotFoundUI({
         {/* Illustration/Description */}
         <div className="bg-white rounded-lg p-6 mb-8 border-2 border-purple-200">
           <p className="text-gray-700">
-            It seems you've wandered off the path. The page you're looking for
-            has been removed or doesn't exist.
+            It seems you&apos;ve wandered off the path. The page you&apos;re looking for
+            has been removed or doesn&apos;t exist.
           </p>
         </div>
 

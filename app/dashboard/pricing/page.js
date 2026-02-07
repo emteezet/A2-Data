@@ -21,7 +21,7 @@ export default function PricingPage() {
 
     setUser(JSON.parse(userData));
     fetchNetworks(token);
-  }, []);
+  }, [fetchNetworks]);
 
   const fetchNetworks = async (token) => {
     try {
@@ -241,7 +241,7 @@ export default function PricingPage() {
                 </h4>
                 <p className="text-gray-600">
                   Data expires based on the validity period. Once expired,
-                  you'll need to purchase a new plan.
+                  you&apos;ll need to purchase a new plan.
                 </p>
               </div>
               <div>

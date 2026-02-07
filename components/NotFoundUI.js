@@ -67,7 +67,7 @@ export default function NotFoundUI({
               Pricing
             </a>
             <a
-              href="mailto:support@dataapp.com"
+              href="mailto:support@a2data.com"
               className="text-purple-600 hover:underline text-sm font-semibold"
             >
               Support

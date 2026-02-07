@@ -10,7 +10,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white bg-opacity-10 backdrop-blur-lg text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">DataApp</h1>
+          <h1 className="text-3xl font-bold">A2 Data</h1>
           <button
             onClick={handleGetStarted}
             className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition"
@@ -85,7 +85,7 @@ export default function HomePage() {
         {/* CTA */}
         <div className="mt-16 text-center">
           <p className="text-white text-lg mb-6">
-            Join thousands of satisfied customers who trust DataApp
+            Join thousands of satisfied customers who trust A2 Data
           </p>
           <button
             onClick={handleGetStarted}
@@ -99,7 +99,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-blue-900 bg-opacity-50 text-white mt-16 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>&copy; 2026 DataApp. All rights reserved. Made for Nigeria.</p>
+          <p>&copy; 2026 A2 Data. All rights reserved. Made for Nigeria.</p>
         </div>
       </footer>
     </div>

@@ -62,7 +62,7 @@ export default function ErrorUI({
           <p className="text-sm text-gray-600">
             If this problem persists, please{" "}
             <a
-              href="mailto:support@dataapp.com"
+              href="mailto:support@a2data.com"
               className="text-red-600 font-semibold hover:underline"
             >
               contact support

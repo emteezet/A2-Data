@@ -42,7 +42,7 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className="p-6 border-b border-blue-800">
-          <h2 className="text-2xl font-bold">DataApp</h2>
+          <h2 className="text-2xl font-bold">A2 Data</h2>
         </div>
 
         {/* Menu Items */}

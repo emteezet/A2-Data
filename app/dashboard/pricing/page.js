@@ -240,6 +240,7 @@ export default function PricingPage() {
                   What happens to unused data?
                 </h4>
                 <p className="text-gray-600">
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
                   Data expires based on the validity period. Once expired,
                   you&apos;ll need to purchase a new plan.
                 </p>

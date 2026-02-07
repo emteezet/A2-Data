@@ -77,7 +77,10 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold mb-2 text-gray-900">DataApp</h1>
-        <p className="text-gray-600 mb-8">Nigeria&apos;s Fastest Data Platform</p>
+        <p className="text-gray-600 mb-8">
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
+          Nigeria&apos;s Fastest Data Platform
+        </p>
 
         <div className="flex space-x-4 mb-8">
           <button

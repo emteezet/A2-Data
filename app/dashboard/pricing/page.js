@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "@/components/Sidebar";
 
 export default function PricingPage() {
@@ -10,20 +10,7 @@ export default function PricingPage() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-
-    if (!token) {
-      window.location.href = "/auth";
-      return;
-    }
-
-    setUser(JSON.parse(userData));
-    fetchNetworks(token);
-  }, [fetchNetworks]);
-
-  const fetchNetworks = async (token) => {
+  const fetchNetworks = useCallback(async (token) => {
     try {
       const res = await fetch("/api/data", {
         headers: { Authorization: `Bearer ${token}` },
@@ -39,7 +26,20 @@ export default function PricingPage() {
     } catch (err) {
       console.error("Error fetching networks:", err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+
+    if (!token) {
+      window.location.href = "/auth";
+      return;
+    }
+
+    setUser(JSON.parse(userData));
+    fetchNetworks(token);
+  }, [fetchNetworks]);
 
   const fetchPlans = async (networkId, token) => {
     setLoading(true);

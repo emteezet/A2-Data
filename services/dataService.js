@@ -100,11 +100,26 @@ export async function purchaseData(
     },
   });
 
+  // Deduct from wallet
+  const Wallet = mongoose.models.Wallet || mongoose.model("Wallet");
+  const wallet = await Wallet.findOne({ userId });
+  if (!wallet || wallet.balance < amount) {
+    transaction.status = TRANSACTION_STATUS.FAILED;
+    transaction.errorMessage = "Insufficient wallet balance";
+    await transaction.save();
+    return { error: "Insufficient wallet balance", statusCode: 400 };
+  }
+
+  wallet.balance -= amount;
+  wallet.totalSpent += amount;
+  await wallet.save();
+
   // Attempt to deliver data
   const providerResult = await dataProvider.buyData(
     dataPlan.providerCode,
     phoneNumber,
     reference,
+    dataPlan.networkId.providerCode,
   );
 
   if (providerResult.success) {
@@ -122,6 +137,13 @@ export async function purchaseData(
     transaction.providerStatus = "failed";
     transaction.errorMessage = providerResult.error;
     transaction.status = TRANSACTION_STATUS.FAILED;
+
+    // Refund wallet
+    wallet.balance += amount;
+    wallet.totalSpent -= amount;
+    await wallet.save();
+
+    transaction.errorMessage = (transaction.errorMessage || "") + " (Refunded)";
   }
 
   await transaction.save();
@@ -167,7 +189,9 @@ export async function retryFailedTransaction(transactionId) {
 
 export async function handleVTPassWebhook(payload) {
   try {
-    const { reference, status, message, transaction_id } = payload;
+    // Check if payload is nested under 'data' key (as per documentation)
+    const data = payload.data || payload;
+    const { reference, status, message } = data;
 
     if (!reference) {
       return { error: "Missing reference in webhook payload" };

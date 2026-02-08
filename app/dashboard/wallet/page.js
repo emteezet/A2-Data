@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/Sidebar";
+
 
 export default function WalletSummaryPage() {
   const [user, setUser] = useState(null);
@@ -70,196 +70,183 @@ export default function WalletSummaryPage() {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-
-      <main className="flex-1 md:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <h1 className="text-2xl font-bold text-blue-600">Wallet Summary</h1>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Main Balance Card */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-8">
-            <h2 className="text-lg font-semibold mb-2 opacity-90">
-              Available Balance
-            </h2>
-            <p className="text-5xl font-bold mb-6">
-              ₦{wallet.balance.toLocaleString()}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Main Balance Card */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-8">
+        <h2 className="text-lg font-semibold mb-2 opacity-90">
+          Available Balance
+        </h2>
+        <p className="text-5xl font-bold mb-6">
+          ₦{wallet.balance.toLocaleString()}
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
+            <p className="text-sm opacity-90">Total Funded</p>
+            <p className="text-2xl font-bold">
+              ₦{wallet.totalFunded.toLocaleString()}
             </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
-                <p className="text-sm opacity-90">Total Funded</p>
-                <p className="text-2xl font-bold">
-                  ₦{wallet.totalFunded.toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
-                <p className="text-sm opacity-90">Total Spent</p>
-                <p className="text-2xl font-bold">
-                  ₦{stats.spent.toLocaleString()}
-                </p>
-              </div>
-            </div>
           </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Total Transactions</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {transactions.length}
-                  </p>
-                </div>
-                <div className="text-4xl">📊</div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Amount Funded</p>
-                  <p className="text-3xl font-bold text-green-600">
-                    ₦{stats.funded.toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-4xl">💳</div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Amount Spent</p>
-                  <p className="text-3xl font-bold text-red-600">
-                    ₦{stats.spent.toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-4xl">💸</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Transaction History */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">Recent Transactions</h3>
-
-            {loading ? (
-              <div className="text-center text-gray-600">Loading...</div>
-            ) : transactions.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                        Date
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                        Description
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                        Type
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                        Amount
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.slice(0, 10).map((tx) => (
-                      <tr key={tx._id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 text-gray-600">
-                          {new Date(tx.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="font-semibold">
-                            {tx.description || "Transaction"}
-                          </div>
-                          {tx.reference && (
-                            <div className="text-sm text-gray-600">
-                              Ref: {tx.reference}
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-semibold capitalize">
-                            {tx.type}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-semibold">
-                          <span
-                            className={
-                              tx.type === "credit"
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }
-                          >
-                            {tx.type === "credit" ? "+" : "-"}₦
-                            {tx.amount?.toLocaleString()}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              tx.status === "successful"
-                                ? "bg-green-100 text-green-800"
-                                : tx.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {tx.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center text-gray-600">
-                No transactions yet
-              </div>
-            )}
-          </div>
-
-          {/* Wallet Information */}
-          <div className="mt-8 bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">Wallet Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-gray-600 text-sm">Wallet ID</p>
-                <p className="font-semibold text-gray-900">{wallet._id}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Account Type</p>
-                <p className="font-semibold text-gray-900">Primary</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Created On</p>
-                <p className="font-semibold text-gray-900">
-                  {new Date(wallet.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Last Updated</p>
-                <p className="font-semibold text-gray-900">
-                  {new Date(wallet.updatedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
+          <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
+            <p className="text-sm opacity-90">Total Spent</p>
+            <p className="text-2xl font-bold">
+              ₦{stats.spent.toLocaleString()}
+            </p>
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm">Total Transactions</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {transactions.length}
+              </p>
+            </div>
+            <div className="text-4xl">📊</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm">Amount Funded</p>
+              <p className="text-3xl font-bold text-green-600">
+                ₦{stats.funded.toLocaleString()}
+              </p>
+            </div>
+            <div className="text-4xl">💳</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm">Amount Spent</p>
+              <p className="text-3xl font-bold text-red-600">
+                ₦{stats.spent.toLocaleString()}
+              </p>
+            </div>
+            <div className="text-4xl">💸</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction History */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-xl font-bold mb-4">Recent Transactions</h3>
+
+        {
+          loading ? (
+            <div className="text-center text-gray-600">Loading...</div>
+          ) : transactions.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Date
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Description
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Type
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Amount
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.slice(0, 10).map((tx) => (
+                    <tr key={tx._id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 text-gray-600">
+                        {new Date(tx.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-semibold">
+                          {tx.description || "Transaction"}
+                        </div>
+                        {tx.reference && (
+                          <div className="text-sm text-gray-600">
+                            Ref: {tx.reference}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-semibold capitalize">
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-semibold">
+                        <span
+                          className={
+                            tx.type === "credit"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          {tx.type === "credit" ? "+" : "-"}₦
+                          {tx.amount?.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${tx.status === "successful"
+                            ? "bg-green-100 text-green-800"
+                            : tx.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                            }`}
+                        >
+                          {tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center text-gray-600">
+              No transactions yet
+            </div>
+          )
+        }
+      </div>
+
+      {/* Wallet Information */}
+      <div className="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 className="text-xl font-bold mb-4">Wallet Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-gray-600 text-sm">Wallet ID</p>
+            <p className="font-semibold text-gray-900">{wallet._id}</p>
+          </div>
+          <div>
+            <p className="text-gray-600 text-sm">Account Type</p>
+            <p className="font-semibold text-gray-900">Primary</p>
+          </div>
+          <div>
+            <p className="text-gray-600 text-sm">Created On</p>
+            <p className="font-semibold text-gray-900">
+              {new Date(wallet.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-600 text-sm">Last Updated</p>
+            <p className="font-semibold text-gray-900">
+              {new Date(wallet.updatedAt).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

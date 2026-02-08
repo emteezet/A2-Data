@@ -1,20 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/Sidebar";
+import Link from "next/link";
 
-export default function DashboardPage() {
+export default function DashboardHub() {
   const [user, setUser] = useState(null);
   const [wallet, setWallet] = useState(null);
-  const [networks, setNetworks] = useState([]);
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("select-network");
-  const [formData, setFormData] = useState({
-    phoneNumber: "",
-    dataPlanId: "",
-  });
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -27,7 +19,7 @@ export default function DashboardPage() {
 
     setUser(JSON.parse(userData));
     fetchWallet(token);
-    fetchNetworks(token);
+    fetchTransactions(token);
   }, []);
 
   const fetchWallet = async (token) => {
@@ -44,232 +36,121 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchNetworks = async (token) => {
+  const fetchTransactions = async (token) => {
     try {
-      const res = await fetch("/api/data", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setNetworks(data.data);
-      }
-    } catch (err) {
-      console.error("Error fetching networks:", err);
-    }
-  };
-
-  const fetchPlans = async (networkId, token) => {
-    try {
-      const res = await fetch(`/api/data/${networkId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setPlans(data.data);
-      }
-    } catch (err) {
-      console.error("Error fetching plans:", err);
-    }
-  };
-
-  const handleSelectNetwork = (network) => {
-    setSelectedNetwork(network);
-    const token = localStorage.getItem("token");
-    fetchPlans(network._id, token);
-    setStep("select-plan");
-  };
-
-  const handleSelectPlan = (plan) => {
-    setFormData((prev) => ({ ...prev, dataPlanId: plan._id }));
-    setStep("enter-phone");
-  };
-
-  const handlePhoneChange = (e) => {
-    setFormData((prev) => ({ ...prev, phoneNumber: e.target.value }));
-  };
-
-  const handlePurchase = async () => {
-    if (!formData.phoneNumber || !formData.dataPlanId) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    setLoading(true);
-    const token = localStorage.getItem("token");
-
-    try {
-      const res = await fetch("/api/data", {
+      const res = await fetch("/api/wallet", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          action: "purchase",
-          dataPlanId: formData.dataPlanId,
-          phoneNumber: formData.phoneNumber,
-        }),
+        body: JSON.stringify({ action: "history", limit: 10 }),
       });
-
       const data = await res.json();
-
       if (data.success) {
-        alert("Purchase successful! Data will be delivered shortly.");
-        setStep("select-network");
-        setFormData({ phoneNumber: "", dataPlanId: "" });
-        setSelectedNetwork(null);
-        fetchWallet(token);
-      } else {
-        alert(data.message || "Purchase failed");
+        setTransactions(data.data.transactions || []);
       }
     } catch (err) {
-      alert("Error processing purchase");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching transactions:", err);
     }
   };
 
   if (!user) return <div>Loading...</div>;
 
-  const selectedPlan = plans.find((p) => p._id === formData.dataPlanId);
-
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Welcome Message */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900">Welcome, {user.name}! 👋</h2>
+        <p className="text-gray-600">Here's your account summary at a glance.</p>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 md:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-blue-600">DataApp</h1>
-            <span className="text-gray-700">{user.name}</span>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Wallet Balance */}
-          {wallet && (
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 mb-8">
-              <h2 className="text-lg font-semibold mb-2">Wallet Balance</h2>
-              <p className="text-4xl font-bold">
-                ₦{wallet.balance.toLocaleString()}
-              </p>
-              <p className="text-blue-100 mt-2">
-                Total Funded: ₦{wallet.totalFunded.toLocaleString()}
-              </p>
-            </div>
-          )}
-
-          {/* Purchase Section */}
-          <div className="bg-white rounded-lg shadow p-6">
-            {step === "select-network" && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Select Network</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {networks.map((network) => (
-                    <button
-                      key={network._id}
-                      onClick={() => handleSelectNetwork(network)}
-                      className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition text-center font-semibold"
-                    >
-                      {network.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {step === "select-plan" && (
-              <div>
-                <button
-                  onClick={() => {
-                    setStep("select-network");
-                    setSelectedNetwork(null);
-                  }}
-                  className="mb-4 text-blue-600 hover:underline"
-                >
-                  ← Back
-                </button>
-                <h2 className="text-2xl font-bold mb-6">
-                  {selectedNetwork?.name} Plans
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {plans.map((plan) => (
-                    <button
-                      key={plan._id}
-                      onClick={() => handleSelectPlan(plan)}
-                      className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition text-left"
-                    >
-                      <p className="font-bold text-lg">{plan.dataSize}</p>
-                      <p className="text-gray-600">{plan.name}</p>
-                      <p className="text-gray-500 text-sm">
-                        Validity: {plan.validity}
-                      </p>
-                      <p className="text-blue-600 font-bold mt-2">
-                        ₦{plan.price}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {step === "enter-phone" && (
-              <div>
-                <button
-                  onClick={() => {
-                    setStep("select-plan");
-                    setFormData((prev) => ({ ...prev, dataPlanId: "" }));
-                  }}
-                  className="mb-4 text-blue-600 hover:underline"
-                >
-                  ← Back
-                </button>
-                <h2 className="text-2xl font-bold mb-6">Confirm Purchase</h2>
-
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <div className="flex justify-between mb-4">
-                    <span className="text-gray-700">Network:</span>
-                    <span className="font-semibold">
-                      {selectedNetwork?.name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-4">
-                    <span className="text-gray-700">Plan:</span>
-                    <span className="font-semibold">
-                      {selectedPlan?.dataSize} - ₦{selectedPlan?.price}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phoneNumber}
-                    onChange={handlePhoneChange}
-                    placeholder="Enter phone number"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <button
-                  onClick={handlePurchase}
-                  disabled={loading}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:opacity-50"
-                >
-                  {loading ? "Processing..." : "Buy Now"}
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Account Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 shadow-xl">
+          <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">
+            Available Balance
+          </p>
+          <p className="text-4xl font-black">
+            ₦{wallet?.balance.toLocaleString() || "0"}
+          </p>
         </div>
-      </main>
+
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
+            Total Transactions
+          </p>
+          <p className="text-4xl font-black text-gray-900">
+            {transactions.length}
+          </p>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
+            Total Spent
+          </p>
+          <p className="text-4xl font-black text-blue-600">
+            ₦{wallet?.totalSpent?.toLocaleString() || "0"}
+          </p>
+        </div>
+      </div>
+
+      {/* Services Section */}
+      <div className="mb-12">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Quick Services</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Link
+            href="/dashboard/buy-data"
+            className="group bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-500 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center space-x-6">
+              <div className="text-5xl group-hover:scale-110 transition-transform duration-300">📊</div>
+              <div>
+                <h4 className="text-xl font-bold text-gray-900 mb-1">Buy Data</h4>
+                <p className="text-gray-500">Fast and reliable data bundles for all networks.</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/dashboard/airtime"
+            className="group bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-500 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center space-x-6">
+              <div className="text-5xl group-hover:scale-110 transition-transform duration-300">📱</div>
+              <div>
+                <h4 className="text-xl font-bold text-gray-900 mb-1">Buy Airtime</h4>
+                <p className="text-gray-500">Instant top-up for your mobile phone.</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link
+          href="/dashboard/fund-wallet"
+          className="flex items-center justify-between p-6 bg-blue-50 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors"
+        >
+          <div className="flex items-center space-x-4">
+            <span className="text-2xl">💳</span>
+            <span className="font-bold text-blue-900">Fund Your Wallet</span>
+          </div>
+          <span className="text-blue-600">→</span>
+        </Link>
+
+        <Link
+          href="/dashboard/transactions"
+          className="flex items-center justify-between p-6 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center space-x-4">
+            <span className="text-2xl">📋</span>
+            <span className="font-bold text-gray-900">View History</span>
+          </div>
+          <span className="text-gray-600">→</span>
+        </Link>
+      </div>
     </div>
   );
 }

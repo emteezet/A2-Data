@@ -5,7 +5,8 @@ import { successResponse, errorResponse } from "@/lib/response";
 export async function POST(request) {
   await dbConnect();
 
-  const { action, email, amount, metadata } = await request.json();
+  const body = await request.json();
+  const { action, email, amount, metadata, reference } = body;
 
   try {
     if (action === "initialize") {
@@ -27,7 +28,6 @@ export async function POST(request) {
     }
 
     if (action === "verify") {
-      const { reference } = await request.json();
       if (!reference) {
         return Response.json(errorResponse("Reference is required", 400), {
           status: 400,

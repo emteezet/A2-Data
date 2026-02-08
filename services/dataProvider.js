@@ -15,23 +15,49 @@ class DataProvider {
     });
   }
 
-  async buyData(dataPlanCode, phoneNumber, reference) {
+  generateRequestId() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hour = String(now.getHours()).padStart(2, "0");
+    const minute = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+
+    return `${year}${month}${day}${hour}${minute}${seconds}${random}`;
+  }
+
+  async buyData(dataPlanCode, phoneNumber, reference, networkCode = "mtn-data") {
     try {
-      const response = await this.client.post("/purchase", {
-        code: dataPlanCode,
+      const requestId = this.generateRequestId();
+
+      const response = await this.client.post("/pay", {
+        request_id: requestId,
+        serviceID: networkCode,
+        billersCode: phoneNumber,
+        variation_code: dataPlanCode,
+        amount: 0, // VTpass usually ignores this if variation_code is provided
         phone: phoneNumber,
-        reference,
       });
 
-      return {
-        success: true,
-        providerReference: response.data.reference,
-        status: response.data.status || PROVIDER_STATUS.DELIVERED,
-      };
+      if (response.data.code === "000") {
+        return {
+          success: true,
+          providerReference: response.data.content.transactions.transactionId,
+          status: PROVIDER_STATUS.DELIVERED,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.data.response_description || "VTpass error",
+          status: PROVIDER_STATUS.FAILED,
+        };
+      }
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.response?.data?.response_description || error.message,
         status: PROVIDER_STATUS.FAILED,
       };
     }

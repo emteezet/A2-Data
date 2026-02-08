@@ -1,16 +1,23 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 import Network from "../models/Network.js";
 import DataPlan from "../models/DataPlan.js";
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/dataapp";
+dotenv.config({ path: ".env.local" });
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("❌ MONGODB_URI is not defined in .env.local");
+  process.exit(1);
+}
 
 const networks = [
   {
     name: "MTN",
     code: "mtn",
     commissionPercentage: 10,
-    providerCode: "mtn-ng",
+    providerCode: "mtn-data",
     description: "MTN Nigeria",
     isActive: true,
   },
@@ -18,7 +25,7 @@ const networks = [
     name: "Airtel",
     code: "airtel",
     commissionPercentage: 10,
-    providerCode: "airtel-ng",
+    providerCode: "airtel-data",
     description: "Airtel Nigeria",
     isActive: true,
   },
@@ -26,7 +33,7 @@ const networks = [
     name: "Glo",
     code: "glo",
     commissionPercentage: 10,
-    providerCode: "glo-ng",
+    providerCode: "glo-data",
     description: "Globacom Nigeria",
     isActive: true,
   },
@@ -34,7 +41,7 @@ const networks = [
     name: "9mobile",
     code: "9mobile",
     commissionPercentage: 10,
-    providerCode: "9mobile-ng",
+    providerCode: "9mobile-data",
     description: "9mobile Nigeria",
     isActive: true,
   },
@@ -42,131 +49,36 @@ const networks = [
 
 const dataPlanTemplates = {
   mtn: [
-    {
-      name: "MTN 1GB",
-      dataSize: "1GB",
-      price: 500,
-      validity: "30 days",
-      providerCode: "MTN1GB",
-    },
-    {
-      name: "MTN 2GB",
-      dataSize: "2GB",
-      price: 1000,
-      validity: "30 days",
-      providerCode: "MTN2GB",
-    },
-    {
-      name: "MTN 5GB",
-      dataSize: "5GB",
-      price: 2000,
-      validity: "30 days",
-      providerCode: "MTN5GB",
-    },
-    {
-      name: "MTN 10GB",
-      dataSize: "10GB",
-      price: 3500,
-      validity: "30 days",
-      providerCode: "MTN10GB",
-    },
+    { name: "MTN 1GB (SME)", dataSize: "1GB", price: 250, validity: "30 days", providerCode: "1000", type: "SME" },
+    { name: "MTN 2GB (SME)", dataSize: "2GB", price: 500, validity: "30 days", providerCode: "2000", type: "SME" },
+    { name: "MTN 3GB (SME)", dataSize: "3GB", price: 750, validity: "30 days", providerCode: "3000", type: "SME" },
+    { name: "MTN 5GB (SME)", dataSize: "5GB", price: 1250, validity: "30 days", providerCode: "5000", type: "SME" },
+    { name: "MTN 10GB (SME)", dataSize: "10GB", price: 2500, validity: "30 days", providerCode: "10000", type: "SME" },
+    { name: "MTN 1GB (Coupon)", dataSize: "1GB", price: 300, validity: "30 days", providerCode: "C1000", type: "Coupon" },
+    { name: "MTN 2GB (Coupon)", dataSize: "2GB", price: 600, validity: "30 days", providerCode: "C2000", type: "Coupon" },
   ],
   airtel: [
-    {
-      name: "Airtel 1GB",
-      dataSize: "1GB",
-      price: 520,
-      validity: "30 days",
-      providerCode: "AIRTEL1GB",
-    },
-    {
-      name: "Airtel 2GB",
-      dataSize: "2GB",
-      price: 1050,
-      validity: "30 days",
-      providerCode: "AIRTEL2GB",
-    },
-    {
-      name: "Airtel 5GB",
-      dataSize: "5GB",
-      price: 2050,
-      validity: "30 days",
-      providerCode: "AIRTEL5GB",
-    },
-    {
-      name: "Airtel 10GB",
-      dataSize: "10GB",
-      price: 3800,
-      validity: "30 days",
-      providerCode: "AIRTEL10GB",
-    },
+    { name: "Airtel 1GB (SME)", dataSize: "1GB", price: 260, validity: "30 days", providerCode: "A1000", type: "SME" },
+    { name: "Airtel 2GB (SME)", dataSize: "2GB", price: 520, validity: "30 days", providerCode: "A2000", type: "SME" },
+    { name: "Airtel 5GB (SME)", dataSize: "5GB", price: 1300, validity: "30 days", providerCode: "A5000", type: "SME" },
+    { name: "Airtel 1GB (Coupon)", dataSize: "1GB", price: 350, validity: "30 days", providerCode: "AC1000", type: "Coupon" },
   ],
   glo: [
-    {
-      name: "Glo 1GB",
-      dataSize: "1GB",
-      price: 480,
-      validity: "30 days",
-      providerCode: "GLO1GB",
-    },
-    {
-      name: "Glo 2GB",
-      dataSize: "2GB",
-      price: 950,
-      validity: "30 days",
-      providerCode: "GLO2GB",
-    },
-    {
-      name: "Glo 5GB",
-      dataSize: "5GB",
-      price: 1950,
-      validity: "30 days",
-      providerCode: "GLO5GB",
-    },
-    {
-      name: "Glo 10GB",
-      dataSize: "10GB",
-      price: 3400,
-      validity: "30 days",
-      providerCode: "GLO10GB",
-    },
+    { name: "Glo 1GB (SME)", dataSize: "1GB", price: 240, validity: "30 days", providerCode: "G1000", type: "SME" },
+    { name: "Glo 2GB (SME)", dataSize: "2GB", price: 480, validity: "30 days", providerCode: "G2000", type: "SME" },
+    { name: "Glo 1GB (Coupon)", dataSize: "1GB", price: 280, validity: "30 days", providerCode: "GC1000", type: "Coupon" },
   ],
   "9mobile": [
-    {
-      name: "9mobile 1GB",
-      dataSize: "1GB",
-      price: 490,
-      validity: "30 days",
-      providerCode: "9M1GB",
-    },
-    {
-      name: "9mobile 2GB",
-      dataSize: "2GB",
-      price: 970,
-      validity: "30 days",
-      providerCode: "9M2GB",
-    },
-    {
-      name: "9mobile 5GB",
-      dataSize: "5GB",
-      price: 1970,
-      validity: "30 days",
-      providerCode: "9M5GB",
-    },
-    {
-      name: "9mobile 10GB",
-      dataSize: "10GB",
-      price: 3600,
-      validity: "30 days",
-      providerCode: "9M10GB",
-    },
+    { name: "9mobile 1GB (SME)", dataSize: "1GB", price: 250, validity: "30 days", providerCode: "E1000", type: "SME" },
+    { name: "9mobile 1.5GB (SME)", dataSize: "1.5GB", price: 375, validity: "30 days", providerCode: "E1500", type: "SME" },
+    { name: "9mobile 1GB (Coupon)", dataSize: "1GB", price: 300, validity: "30 days", providerCode: "EC1000", type: "Coupon" },
   ],
 };
 
 async function seedDatabase() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log("Connected to MongoDB");
+    console.log("Connected to MongoDB Atlas");
 
     // Clear existing data
     await Network.deleteMany({});
@@ -204,3 +116,4 @@ async function seedDatabase() {
 }
 
 seedDatabase();
+

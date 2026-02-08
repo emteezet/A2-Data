@@ -21,34 +21,11 @@ async function getAuthUser(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function GET(request) {
   try {
     await dbConnect();
-  } catch (error) {
-    console.error("Database connection error:", error);
-    return Response.json(errorResponse("Database connection failed", 503), {
-      status: 503,
-    });
-  }
-
-  const { id } = params;
-
-  try {
-    if (!id) {
-      // Get all networks
-      const result = await getNetworks();
-
-      if (result.error) {
-        return Response.json(errorResponse(result.error, result.statusCode), {
-          status: result.statusCode,
-        });
-      }
-
-      return Response.json(successResponse(result.data), { status: 200 });
-    }
-
-    // Get plans for a network
-    const result = await getNetworkPlans(id);
+    // Get all networks
+    const result = await getNetworks();
 
     if (result.error) {
       return Response.json(errorResponse(result.error, result.statusCode), {

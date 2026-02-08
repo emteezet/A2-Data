@@ -32,6 +32,11 @@ const dataPlanSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    type: {
+      type: String,
+      enum: ["SME", "Coupon"],
+      default: "SME",
+    },
     description: {
       type: String,
       default: "",

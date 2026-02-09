@@ -33,7 +33,7 @@ export default function Sidebar({ isOpen: externalIsOpen, setIsOpen: externalSet
       {/* Sidebar */}
       <aside
         className={`fixed left-0 top-0 h-screen w-64 bg-blue-900 text-white transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          } z-40 shadow-2xl`}
+          } z-40 shadow-2xl flex flex-col`}
       >
         {/* Logo & Close Button */}
         <div className="p-6 border-b border-blue-800 flex justify-between items-center">
@@ -49,7 +49,7 @@ export default function Sidebar({ isOpen: externalIsOpen, setIsOpen: externalSet
         </div>
 
         {/* Menu Items */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
           {menuItems.map((item) => (
             <Link
               key={item.href}

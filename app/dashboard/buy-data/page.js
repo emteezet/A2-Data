@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
+import LoadingUI from "@/components/LoadingUI";
 
 export default function BuyDataPage() {
     const { showNotification } = useNotification();
@@ -155,7 +156,7 @@ export default function BuyDataPage() {
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) return <LoadingUI message="Loading data plans..." />;
 
     const filteredPlans = plans.filter((plan) => {
         return plan.type === selectedType;

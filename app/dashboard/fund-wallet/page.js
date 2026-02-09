@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import LoadingUI from "@/components/LoadingUI";
 
 
 export default function FundWalletPage() {
@@ -94,7 +95,7 @@ export default function FundWalletPage() {
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <LoadingUI message="Connecting to secure payment systems..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

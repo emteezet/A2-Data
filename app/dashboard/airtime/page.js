@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
+import LoadingUI from "@/components/LoadingUI";
 
 
 export default function AirtimePage() {
@@ -109,7 +110,7 @@ export default function AirtimePage() {
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <LoadingUI message="Setting up Secure payment gateway..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNotification } from "@/context/NotificationContext";
+import LoadingUI from "@/components/LoadingUI";
 
 
 export default function AccountPage() {
@@ -69,7 +70,7 @@ export default function AccountPage() {
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <LoadingUI message="Fetching account details..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

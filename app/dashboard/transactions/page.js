@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import LoadingUI from "@/components/LoadingUI";
 
 
 export default function TransactionsPage() {
@@ -81,7 +82,7 @@ export default function TransactionsPage() {
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <LoadingUI message="Retrieving transaction history..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

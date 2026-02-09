@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import LoadingUI from "@/components/LoadingUI";
 
 export default function DashboardHub() {
   const [user, setUser] = useState(null);
@@ -55,7 +56,7 @@ export default function DashboardHub() {
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <LoadingUI message="Preparing your dashboard..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

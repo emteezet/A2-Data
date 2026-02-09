@@ -19,6 +19,7 @@ export async function initializePayment(email, amount, metadata = {}, customRefe
         amount: amount * 100, // Convert to kobo
         reference,
         metadata,
+        callback_url,
       },
       {
         headers: {

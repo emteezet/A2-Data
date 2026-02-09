@@ -49,7 +49,10 @@ export async function POST(request) {
                 metadata: { ...metadata, email }
             });
 
-            const result = await initializePayment(email, amount, metadata, reference);
+            const origin = request.headers.get("origin") || `https://${request.headers.get("host")}`;
+            const callback_url = `${origin}/api/wallet/paystack`;
+
+            const result = await initializePayment(email, amount, metadata, reference, callback_url);
 
             if (result.error) {
                 return Response.json(errorResponse(result.error, result.statusCode), {

@@ -48,6 +48,7 @@ export async function registerUser(email, phone, password, name) {
       userId: user._id,
       email: user.email,
       name: user.name,
+      phone: user.phone,
       token,
     },
   };
@@ -86,6 +87,7 @@ export async function loginUser(email, password) {
       email: user.email,
       name: user.name,
       role: user.role,
+      phone: user.phone,
       token,
     },
   };
@@ -123,7 +125,7 @@ export async function updateUser(userId, updateData) {
       userId: user._id,
       email: user.email,
       name: user.name,
-      phoneNumber: user.phone,
+      phone: user.phone,
       role: user.role,
     },
   };

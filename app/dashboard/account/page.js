@@ -8,10 +8,11 @@ export default function AccountPage() {
   const { showNotification } = useNotification();
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phoneNumber: "",
+    phone: "",
   });
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function AccountPage() {
     setFormData({
       name: parsedUser.name || "",
       email: parsedUser.email || "",
-      phoneNumber: parsedUser.phoneNumber || "",
+      phone: parsedUser.phone || parsedUser.phoneNumber || "",
     });
   }, []);
 
@@ -39,6 +40,7 @@ export default function AccountPage() {
 
   const handleSave = async () => {
     const token = localStorage.getItem("token");
+    setLoading(true);
 
     try {
       const res = await fetch("/api/auth", {
@@ -62,6 +64,8 @@ export default function AccountPage() {
       }
     } catch (err) {
       showNotification("Error updating profile", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,8 +118,8 @@ export default function AccountPage() {
               </label>
               <input
                 type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
               />
@@ -123,9 +127,20 @@ export default function AccountPage() {
 
             <button
               onClick={handleSave}
-              className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700"
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center"
             >
-              Save Changes
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </button>
           </div>
         ) : (
@@ -141,7 +156,7 @@ export default function AccountPage() {
             <div className="flex justify-between py-3 border-b">
               <span className="text-gray-600">Phone Number:</span>
               <span className="font-semibold">
-                {user.phoneNumber || "Not set"}
+                {user.phone || user.phoneNumber || "Not set"}
               </span>
             </div>
             <div className="flex justify-between py-3 border-b">

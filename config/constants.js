@@ -12,6 +12,11 @@ export const TRANSACTION_STATUS = {
   REFUNDED: "refunded",
 };
 
+export const TRANSACTION_TYPE = {
+  PURCHASE: "purchase",
+  FUNDING: "funding",
+};
+
 export const PROVIDER_STATUS = {
   PENDING: "pending",
   DELIVERED: "delivered",

@@ -16,16 +16,21 @@ const transactionSchema = new mongoose.Schema(
     dataPlanId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DataPlan",
-      required: true,
+      required: false,
     },
     networkId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Network",
-      required: true,
+      required: false,
     },
     phoneNumber: {
       type: String,
-      required: true,
+      required: false,
+    },
+    type: {
+      type: String,
+      enum: ["purchase", "funding"],
+      default: "purchase",
     },
     amount: {
       type: Number,

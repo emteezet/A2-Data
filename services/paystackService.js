@@ -3,13 +3,14 @@ import { verifyPaystackSignature } from "@/lib/crypto";
 import { generateReference } from "@/lib/helpers";
 import Transaction from "@/models/Transaction";
 import CommissionLog from "@/models/CommissionLog";
-import { TRANSACTION_STATUS, PAYMENT_METHOD } from "@/config/constants";
+import { TRANSACTION_STATUS, PAYMENT_METHOD, TRANSACTION_TYPE } from "@/config/constants";
+import { fundWallet } from "@/services/walletService";
 
 const PAYSTACK_BASE_URL = "https://api.paystack.co";
 
-export async function initializePayment(email, amount, metadata = {}) {
+export async function initializePayment(email, amount, metadata = {}, customReference = null) {
   try {
-    const reference = generateReference("PSK");
+    const reference = customReference || generateReference("PSK");
 
     const response = await axios.post(
       `${PAYSTACK_BASE_URL}/transaction/initialize`,
@@ -90,10 +91,19 @@ export async function handlePaystackWebhook(payload, signature) {
     }
 
     transaction.status = TRANSACTION_STATUS.SUCCESS;
+    await transaction.save();
+
+    if (transaction.type === TRANSACTION_TYPE.FUNDING) {
+      // Credit user wallet
+      await fundWallet(transaction.userId, transaction.amount, data.reference);
+      return { success: true, transaction };
+    }
+
+    // For purchases, set provider status to pending for background processing
     transaction.providerStatus = "pending";
     await transaction.save();
 
-    // Log commission
+    // Log commission (only for purchases)
     const commission =
       (transaction.amount *
         parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE)) /

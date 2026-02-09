@@ -4,79 +4,77 @@ import Link from "next/link";
 
 export default function NotFoundUI({
   title = "Page Not Found",
-  message = "The page you're looking for doesn't exist.",
+  message = "The page you're looking for doesn't exist or has been moved.",
   homeHref = "/",
   backHref = null,
 }) {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
-      <div className="max-w-md w-full mx-auto text-center px-6">
-        {/* 404 Number */}
-        <div className="mb-8">
-          <h1 className="text-9xl font-extrabold text-purple-600 drop-shadow-lg">
-            404
-          </h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full text-center">
+        {/* Error Illustration */}
+        <div className="relative mb-12 flex justify-center">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+          <div className="relative">
+            <h1 className="text-[180px] font-black leading-none bg-gradient-to-b from-blue-600 to-indigo-800 bg-clip-text text-transparent opacity-20 select-none">
+              404
+            </h1>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-8xl animate-bounce">🔍</span>
+            </div>
+          </div>
         </div>
 
-        {/* Not Found Icon */}
-        <div className="mb-6">
-          <span className="text-6xl">🔍</span>
-        </div>
-
-        {/* Title */}
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">{title}</h2>
-
-        {/* Message */}
-        <p className="text-gray-600 mb-8 leading-relaxed">{message}</p>
-
-        {/* Illustration/Description */}
-        <div className="bg-white rounded-lg p-6 mb-8 border-2 border-purple-200">
-          <p className="text-gray-700">
-            {/* eslint-disable-next-line react/no-unescaped-entities */}
-            It seems you&apos;ve wandered off the path. The page you&apos;re
-            looking for has been removed or doesn&apos;t exist.
+        {/* Text Content */}
+        <div className="space-y-4 mb-10 relative z-10">
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            {title}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-md mx-auto leading-relaxed">
+            {message}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           {backHref && (
-            <Link
-              href={backHref}
-              className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200"
+            <button
+              onClick={() => window.history.back()}
+              className="w-full sm:w-auto px-8 py-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 shadow-sm"
             >
               Go Back
-            </Link>
+            </button>
           )}
           <Link
             href={homeHref}
-            className="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors duration-200"
+            className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md"
           >
-            Go Home
+            Return Home
           </Link>
         </div>
 
-        {/* Helpful Links */}
-        <div className="mt-8 pt-6 border-t border-purple-200">
-          <p className="text-sm text-gray-600 mb-4">Need help?</p>
-          <div className="flex justify-center gap-4">
-            <a
-              href="/pricing"
-              className="text-purple-600 hover:underline text-sm font-semibold"
-            >
-              Pricing
-            </a>
-            <a
-              href="mailto:support@a2data.com"
-              className="text-purple-600 hover:underline text-sm font-semibold"
-            >
-              Support
-            </a>
-            <a
+        {/* Helpful Resources */}
+        <div className="pt-10 border-t border-gray-100">
+          <p className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-6">
+            Helpful Links
+          </p>
+          <div className="flex flex-wrap justify-center gap-8">
+            <Link
               href="/dashboard"
-              className="text-purple-600 hover:underline text-sm font-semibold"
+              className="text-gray-600 hover:text-blue-600 font-bold transition-colors"
             >
               Dashboard
+            </Link>
+            <Link
+              href="/dashboard/pricing"
+              className="text-gray-600 hover:text-blue-600 font-bold transition-colors"
+            >
+              Pricing
+            </Link>
+            <a
+              href="mailto:support@a2data.com"
+              className="text-gray-600 hover:text-blue-600 font-bold transition-colors"
+            >
+              Support
             </a>
           </div>
         </div>

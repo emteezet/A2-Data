@@ -43,16 +43,17 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  await dbConnect();
-
-  const user = await getAuthUser(request);
-  if (!user) {
-    return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
-  }
-
-  const { action, dataPlanId, phoneNumber } = await request.json();
-
   try {
+    await dbConnect();
+
+    const user = await getAuthUser(request);
+    if (!user) {
+      return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
+    }
+
+    const body = await request.json();
+    const { action, dataPlanId, phoneNumber } = body;
+
     if (action === "purchase") {
       if (!dataPlanId || !phoneNumber) {
         return Response.json(errorResponse("Missing required fields", 400), {
@@ -81,7 +82,7 @@ export async function POST(request) {
     }
 
     if (action === "transaction-details") {
-      const { transactionId } = await request.json();
+      const { transactionId } = body;
       if (!transactionId) {
         return Response.json(errorResponse("Transaction ID required", 400), {
           status: 400,

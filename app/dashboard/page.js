@@ -67,13 +67,26 @@ export default function DashboardHub() {
 
       {/* Account Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 shadow-xl">
-          <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">
-            Available Balance
-          </p>
-          <p className="text-4xl font-black">
-            ₦{wallet?.balance.toLocaleString() || "0"}
-          </p>
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden group">
+          <div className="relative z-10">
+            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">
+              Available Balance
+            </p>
+            <div className="flex items-baseline justify-between">
+              <p className="text-4xl font-black">
+                ₦{wallet?.balance.toLocaleString() || "0"}
+              </p>
+              <Link
+                href="/dashboard/fund-wallet"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-bold py-2 px-4 rounded-full transition-all duration-300 flex items-center space-x-2"
+              >
+                <span>Add Fund</span>
+                <span className="text-lg">+</span>
+              </Link>
+            </div>
+          </div>
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
         </div>
 
         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">

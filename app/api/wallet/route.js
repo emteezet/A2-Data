@@ -47,16 +47,17 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  await dbConnect();
-
-  const user = await getAuthUser(request);
-  if (!user) {
-    return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
-  }
-
-  const { action, amount } = await request.json();
-
   try {
+    await dbConnect();
+
+    const user = await getAuthUser(request);
+    if (!user) {
+      return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
+    }
+
+    const body = await request.json();
+    const { action, amount } = body;
+
     if (action === "fund") {
       if (!amount || amount <= 0) {
         return Response.json(errorResponse("Invalid amount", 400), {
@@ -78,7 +79,7 @@ export async function POST(request) {
     }
 
     if (action === "history") {
-      const { limit = 50, skip = 0 } = await request.json();
+      const { limit = 50, skip = 0 } = body;
       const result = await getWalletTransactions(user.userId, limit, skip);
 
       if (result.error) {

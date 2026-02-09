@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function BuyDataPage() {
+    const { showNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [wallet, setWallet] = useState(null);
     const [networks, setNetworks] = useState([]);
@@ -114,7 +117,7 @@ export default function BuyDataPage() {
 
     const handlePurchase = async () => {
         if (!formData.phoneNumber || !formData.dataPlanId) {
-            alert("Please fill all fields");
+            showNotification("Please fill all fields", "warning");
             return;
         }
 
@@ -138,15 +141,15 @@ export default function BuyDataPage() {
             const data = await res.json();
 
             if (data.success) {
-                alert("Purchase successful! Data will be delivered shortly.");
+                showNotification("Purchase successful! Data will be delivered shortly.", "success");
                 setFormData({ phoneNumber: "", dataPlanId: "" });
                 fetchWallet(token);
                 fetchTransactions(token);
             } else {
-                alert(data.message || "Purchase failed");
+                showNotification(data.message || "Purchase failed", "error");
             }
         } catch (err) {
-            alert("Error processing purchase");
+            showNotification("Error processing purchase", "error");
         } finally {
             setLoading(false);
         }
@@ -165,13 +168,25 @@ export default function BuyDataPage() {
             {/* Account Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {/* Balance Card */}
-                <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg">
-                    <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">
-                        Balance
-                    </p>
-                    <p className="text-3xl font-black">
-                        ₦{wallet?.balance.toLocaleString() || "0"}
-                    </p>
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
+                    <div className="relative z-10">
+                        <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">
+                            Balance
+                        </p>
+                        <div className="flex items-baseline justify-between">
+                            <p className="text-3xl font-black">
+                                ₦{wallet?.balance.toLocaleString() || "0"}
+                            </p>
+                            <Link
+                                href="/dashboard/fund-wallet"
+                                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all duration-300 flex items-center space-x-1"
+                            >
+                                <span>Add Fund</span>
+                                <span className="text-sm">+</span>
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
                 </div>
 
                 {/* Transactions Card */}

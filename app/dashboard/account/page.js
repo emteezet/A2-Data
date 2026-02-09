@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useNotification } from "@/context/NotificationContext";
 
 
 export default function AccountPage() {
+  const { showNotification } = useNotification();
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,12 +56,12 @@ export default function AccountPage() {
         localStorage.setItem("user", JSON.stringify(data.data));
         setUser(data.data);
         setIsEditing(false);
-        alert("Profile updated successfully!");
+        showNotification("Profile updated successfully!", "success");
       } else {
-        alert(data.message || "Failed to update profile");
+        showNotification(data.message || "Failed to update profile", "error");
       }
     } catch (err) {
-      alert("Error updating profile");
+      showNotification("Error updating profile", "error");
     }
   };
 

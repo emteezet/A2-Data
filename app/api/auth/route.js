@@ -1,6 +1,46 @@
 import dbConnect from "@/lib/mongodb";
-import { registerUser, loginUser } from "@/services/authService";
+import { registerUser, loginUser, updateUser } from "@/services/authService";
 import { successResponse, errorResponse } from "@/lib/response";
+import { verifyToken } from "@/lib/jwt";
+
+export async function PUT(request) {
+  try {
+    await dbConnect();
+    const token = request.headers.get("Authorization")?.split(" ")[1];
+
+    if (!token) {
+      return Response.json(errorResponse("Unauthenticated", 401), {
+        status: 401,
+      });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded || !decoded.userId) {
+      return Response.json(errorResponse("Invalid token", 401), {
+        status: 401,
+      });
+    }
+
+    const updateData = await request.json();
+    const result = await updateUser(decoded.userId, updateData);
+
+    if (result.error) {
+      return Response.json(errorResponse(result.error, result.statusCode), {
+        status: result.statusCode,
+      });
+    }
+
+    return Response.json(
+      successResponse(result.data, "Profile updated successfully"),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Profile update error:", error);
+    return Response.json(errorResponse(error.message || "Internal server error", 500), {
+      status: 500,
+    });
+  }
+}
 
 export async function POST(request) {
   try {

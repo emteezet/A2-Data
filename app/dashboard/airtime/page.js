@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useNotification } from "@/context/NotificationContext";
 
 
 export default function AirtimePage() {
+  const { showNotification } = useNotification();
   const [user, setUser] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [networks, setNetworks] = useState([]);
@@ -65,7 +68,7 @@ export default function AirtimePage() {
 
   const handlePurchase = async () => {
     if (!phoneNumber || !selectedAmount) {
-      alert("Please fill all fields");
+      showNotification("Please fill all fields", "warning");
       return;
     }
 
@@ -90,17 +93,17 @@ export default function AirtimePage() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Airtime purchase successful!");
+        showNotification("Airtime purchase successful!", "success");
         setStep("select-network");
         setPhoneNumber("");
         setSelectedAmount(null);
         setSelectedNetwork(null);
         fetchWallet(token);
       } else {
-        alert(data.message || "Purchase failed");
+        showNotification(data.message || "Purchase failed", "error");
       }
     } catch (err) {
-      alert("Error processing purchase");
+      showNotification("Error processing purchase", "error");
     } finally {
       setLoading(false);
     }
@@ -112,11 +115,23 @@ export default function AirtimePage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Wallet Balance */}
       {wallet && (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-2">Wallet Balance</h2>
-          <p className="text-4xl font-bold">
-            ₦{wallet.balance.toLocaleString()}
-          </p>
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl p-6 mb-8 relative overflow-hidden group">
+          <div className="relative z-10">
+            <h2 className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">Wallet Balance</h2>
+            <div className="flex items-center justify-between">
+              <p className="text-4xl font-black">
+                ₦{wallet.balance.toLocaleString()}
+              </p>
+              <Link
+                href="/dashboard/fund-wallet"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-bold py-2 px-4 rounded-full transition-all duration-300 flex items-center space-x-2"
+              >
+                <span>Add Fund</span>
+                <span className="text-lg">+</span>
+              </Link>
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
         </div>
       )}
 

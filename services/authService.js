@@ -91,12 +91,42 @@ export async function loginUser(email, password) {
   };
 }
 
-export async function getUserById(userId) {
-  const user = await User.findById(userId).select("-password");
+export async function updateUser(userId, updateData) {
+  const { name, email, phoneNumber } = updateData;
+
+  const user = await User.findById(userId);
   if (!user) {
     return { error: "User not found", statusCode: 404 };
   }
-  return { success: true, data: user };
+
+  if (email && email !== user.email) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return { error: "Email already in use", statusCode: 400 };
+    }
+    user.email = email;
+  }
+
+  if (phoneNumber) {
+    user.phone = normalizePhoneNumber(phoneNumber);
+  }
+
+  if (name) {
+    user.name = name;
+  }
+
+  await user.save();
+
+  return {
+    success: true,
+    data: {
+      userId: user._id,
+      email: user.email,
+      name: user.name,
+      phoneNumber: user.phone,
+      role: user.role,
+    },
+  };
 }
 
 function validateInput(email, phone, password, name) {

@@ -32,7 +32,7 @@ export default function Sidebar({ isOpen: externalIsOpen, setIsOpen: externalSet
     <>
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-blue-900 text-white transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed left-0 top-0 h-[100dvh] w-64 bg-blue-900 text-white transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           } z-40 shadow-2xl flex flex-col`}
       >
         {/* Logo & Close Button */}

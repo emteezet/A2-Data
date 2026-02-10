@@ -165,9 +165,9 @@ export default function BuyDataPage() {
     const selectedPlan = plans.find((p) => p._id === formData.dataPlanId);
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
             {/* Account Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {/* Balance Card */}
                 <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
                     <div className="relative z-10">

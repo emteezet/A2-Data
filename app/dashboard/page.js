@@ -59,11 +59,11 @@ export default function DashboardHub() {
   if (!user) return <LoadingUI message="Preparing your dashboard..." />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
       {/* Welcome Message */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Welcome, {user.name}! 👋</h2>
-        <p className="text-gray-600">Here's your account summary at a glance.</p>
+      <div className="mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {user.name}! 👋</h2>
+        <p className="text-sm sm:text-base text-gray-600">Here's your account summary at a glance.</p>
       </div>
 
       {/* Account Summary Cards */}

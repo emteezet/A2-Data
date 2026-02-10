@@ -98,16 +98,16 @@ export default function FundWalletPage() {
   if (!user) return <LoadingUI message="Connecting to secure payment systems..." />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
       {/* Content */}
       {/* Wallet Balance */}
       {wallet && (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-2">Current Balance</h2>
-          <p className="text-4xl font-bold">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 mb-6">
+          <h2 className="text-base font-semibold mb-1 opacity-90">Current Balance</h2>
+          <p className="text-3xl sm:text-4xl font-bold">
             ₦{wallet.balance.toLocaleString()}
           </p>
-          <p className="text-blue-100 mt-2">
+          <p className="text-blue-100 text-sm mt-1">
             Total Funded: ₦{wallet.totalFunded.toLocaleString()}
           </p>
         </div>
@@ -116,13 +116,13 @@ export default function FundWalletPage() {
       {/* Funding Form */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold mb-4">Quick Amounts</h3>
-          <div className="space-y-2">
+          <h3 className="text-lg font-bold mb-4">Quick Amounts</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
             {[1000, 2500, 5000, 10000].map((amt) => (
               <button
                 key={amt}
                 onClick={() => setAmount(amt.toString())}
-                className={`w-full py-2 px-4 rounded-lg font-semibold transition ${amount === amt.toString()
+                className={`w-full py-2.5 px-4 rounded-lg font-semibold transition ${amount === amt.toString()
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 hover:bg-gray-200"
                   }`}
@@ -134,7 +134,7 @@ export default function FundWalletPage() {
         </div>
 
         <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold mb-4">Enter Amount</h3>
+          <h3 className="text-lg font-bold mb-4">Enter Amount</h3>
           <div className="mb-6">
             <label className="block text-gray-700 font-semibold mb-2">
               Amount (₦)
@@ -143,8 +143,8 @@ export default function FundWalletPage() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount to fund"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 text-lg"
+              placeholder="0.00"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 text-xl font-bold"
             />
           </div>
 

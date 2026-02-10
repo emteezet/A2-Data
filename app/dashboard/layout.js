@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }) {
         <div className="min-h-screen bg-gray-50 flex">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-            <main className="flex-1 md:ml-64 relative pt-16">
+            <main className="flex-1 md:ml-64 relative pt-16 min-w-0 overflow-x-hidden">
                 <header className="bg-white shadow fixed top-0 right-0 left-0 md:left-64 z-20">
                     <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                         <div className="flex items-center space-x-4">

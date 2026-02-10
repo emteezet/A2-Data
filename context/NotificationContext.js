@@ -32,7 +32,7 @@ export const NotificationProvider = ({ children }) => {
     return (
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
-            <div className="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 max-w-sm w-full">
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] flex flex-col space-y-2 max-w-[90vw] md:max-w-sm w-full">
                 {notifications.map((n) => (
                     <Toast
                         key={n.id}
@@ -63,7 +63,7 @@ const Toast = ({ message, type, onClose }) => {
 
     return (
         <div
-            className={`${bgColor} text-white p-4 rounded-xl shadow-2xl flex items-center justify-between transform transition-all duration-300 animate-slideInRight`}
+            className={`${bgColor} text-white p-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex items-center justify-between transform transition-all duration-300 animate-slideInRight border border-white/10`}
         >
             <div className="flex items-center space-x-3">
                 <span className="text-xl">{icon}</span>

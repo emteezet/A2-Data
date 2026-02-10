@@ -50,7 +50,10 @@ export default function AccountPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          phoneNumber: formData.phone // Map 'phone' from state to 'phoneNumber' for API
+        }),
       });
 
       const data = await res.json();

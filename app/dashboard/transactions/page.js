@@ -25,12 +25,17 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async (token) => {
     try {
-      const res = await fetch("/api/data", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: "history", limit: 100 })
       });
       const data = await res.json();
-      if (data.success && data.transactions) {
-        setTransactions(data.transactions);
+      if (data.success && data.data) {
+        setTransactions(data.data.transactions || []);
       }
     } catch (err) {
       console.error("Error fetching transactions:", err);

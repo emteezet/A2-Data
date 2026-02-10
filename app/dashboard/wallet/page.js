@@ -39,12 +39,17 @@ export default function WalletSummaryPage() {
 
   const fetchTransactions = async (token) => {
     try {
-      const res = await fetch("/api/wallet/transactions", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: "history", limit: 100 })
       });
       const data = await res.json();
-      if (data.success) {
-        setTransactions(data.data || []);
+      if (data.success && data.data) {
+        setTransactions(data.data.transactions || []);
       }
     } catch (err) {
       console.error("Error fetching transactions:", err);
@@ -55,11 +60,11 @@ export default function WalletSummaryPage() {
 
   const calculateStats = () => {
     const spent = transactions
-      .filter((tx) => tx.type === "debit")
+      .filter((tx) => tx.type === "data" || tx.type === "airtime")
       .reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
     const funded = transactions
-      .filter((tx) => tx.type === "credit")
+      .filter((tx) => tx.type === "funding")
       .reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
     return { spent, funded };

@@ -8,7 +8,7 @@ import { fundWallet } from "@/services/walletService";
 
 const PAYSTACK_BASE_URL = "https://api.paystack.co";
 
-export async function initializePayment(email, amount, metadata = {}, customReference = null) {
+export async function initializePayment(email, amount, metadata = {}, customReference = null, callbackUrl = null) {
   try {
     const reference = customReference || generateReference("PSK");
 
@@ -19,7 +19,7 @@ export async function initializePayment(email, amount, metadata = {}, customRefe
         amount: amount * 100, // Convert to kobo
         reference,
         metadata,
-        callback_url,
+        callback_url: callbackUrl,
       },
       {
         headers: {

@@ -5,7 +5,7 @@ import { successResponse, errorResponse } from "@/lib/response";
 export async function GET(request, { params }) {
     try {
         await dbConnect();
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return Response.json(errorResponse("Network ID is required", 400), { status: 400 });

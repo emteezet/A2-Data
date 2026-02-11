@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
 
+const networkLogos = {
+  "MTN": "/mtn-logo.svg",
+  "Airtel": "/airtel-logo.svg",
+  "Glo": "/glo-logo.svg",
+  "9mobile": "/9mobile-logo.svg"
+};
+
 
 export default function AirtimePage() {
   const { showNotification } = useNotification();
@@ -169,9 +176,18 @@ export default function AirtimePage() {
                 <button
                   key={network._id}
                   onClick={() => handleSelectNetwork(network)}
-                  className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition text-center font-semibold"
+                  className="p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50/50 hover:shadow-md transition-all duration-300 flex flex-col items-center group"
                 >
-                  {network.name}
+                  <div className="w-16 h-16 relative mb-4 p-2 bg-white rounded-xl shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
+                    <img
+                      src={networkLogos[network.name] || "/globe.svg"}
+                      alt={network.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <span className="font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                    {network.name}
+                  </span>
                 </button>
               ))}
             </div>

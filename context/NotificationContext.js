@@ -16,8 +16,14 @@ export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
 
     const showNotification = useCallback((message, type = "success") => {
-        const id = Date.now();
-        setNotifications((prev) => [...prev, { id, message, type }]);
+        const msgString = String(message);
+        const id = `${Date.now()}-${Math.random()}`;
+
+        setNotifications((prev) => {
+            // Prevent duplicate active messages
+            if (prev.some((n) => String(n.message) === msgString)) return prev;
+            return [...prev, { id, message: msgString, type }];
+        });
 
         // Auto remove after 5 seconds
         setTimeout(() => {
@@ -32,7 +38,7 @@ export const NotificationProvider = ({ children }) => {
     return (
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
-            <div className="fixed top-6 left-0 right-0 z-[100000] flex flex-col items-center space-y-3 pointer-events-none">
+            <div className="fixed top-6 right-6 z-[100000] flex flex-col items-end space-y-3 pointer-events-none">
                 {notifications.map((n) => (
                     <div key={n.id} className="pointer-events-auto">
                         <Toast
@@ -49,15 +55,15 @@ export const NotificationProvider = ({ children }) => {
 
 const Toast = ({ message, type, onClose }) => {
     const config = {
-        success: { bg: "bg-emerald-600", icon: "✅" },
-        error: { bg: "bg-rose-600", icon: "❌" },
-        info: { bg: "bg-sky-600", icon: "ℹ️" },
-        warning: { bg: "bg-amber-500", icon: "⚠️" },
-    }[type] || { bg: "bg-gray-700", icon: "🔔" };
+        success: { accent: "border-emerald-500", icon: "✅" },
+        error: { accent: "border-rose-500", icon: "❌" },
+        info: { accent: "border-sky-500", icon: "ℹ️" },
+        warning: { accent: "border-amber-500", icon: "⚠️" },
+    }[type] || { accent: "border-slate-500", icon: "🔔" };
 
     return (
         <div
-            className={`${config.bg} text-white px-5 py-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center space-x-4 animate-slideInTop border border-white/20 backdrop-blur-sm min-w-[300px] max-w-[90vw]`}
+            className={`bg-slate-900 border-l-4 ${config.accent} text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center space-x-4 animate-slideInRight min-w-[320px] max-w-[400px] pointer-events-auto`}
         >
             <span className="text-xl flex-shrink-0">{config.icon}</span>
             <p className="font-bold text-sm leading-tight flex-1">{message}</p>

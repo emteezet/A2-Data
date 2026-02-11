@@ -4,6 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
+import Image from "next/image";
+
+const networkLogos = {
+    "MTN": "/mtn-logo.svg",
+    "Airtel": "/airtel-logo.svg",
+    "Glo": "/glo-logo.svg",
+    "9mobile": "/9mobile-logo.svg"
+};
 
 export default function BuyDataPage() {
     const { showNotification } = useNotification();
@@ -261,24 +269,41 @@ export default function BuyDataPage() {
                 <div className="p-8 space-y-6">
                     {/* Network Selection */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Network Provider
+                        <label className="block text-sm font-semibold text-gray-700 mb-4">
+                            Select Network Provider
                         </label>
-                        <select
-                            value={selectedNetwork?._id || ""}
-                            onChange={(e) => {
-                                const network = networks.find((n) => n._id === e.target.value);
-                                if (network) handleSelectNetwork(network);
-                            }}
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        >
-                            <option value="">Select a network</option>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {networks.map((network) => (
-                                <option key={network._id} value={network._id}>
-                                    {network.name}
-                                </option>
+                                <button
+                                    key={network._id}
+                                    onClick={() => handleSelectNetwork(network)}
+                                    className={`relative flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-300 group ${selectedNetwork?._id === network._id
+                                        ? "border-blue-600 bg-blue-50/50 shadow-md ring-4 ring-blue-50"
+                                        : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-sm"
+                                        }`}
+                                >
+                                    <div className="w-12 h-12 relative mb-3 p-1">
+                                        <img
+                                            src={networkLogos[network.name] || "/globe.svg"}
+                                            alt={network.name}
+                                            className="w-full h-full object-contain filter group-hover:drop-shadow-sm transition-all"
+                                        />
+                                    </div>
+                                    <span className={`text-xs font-bold ${selectedNetwork?._id === network._id ? "text-blue-600" : "text-gray-500"
+                                        }`}>
+                                        {network.name}
+                                    </span>
+
+                                    {selectedNetwork?._id === network._id && (
+                                        <div className="absolute -top-2 -right-2 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-scaleIn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </button>
                             ))}
-                        </select>
+                        </div>
                     </div>
 
                     {/* Data Type Selection */}

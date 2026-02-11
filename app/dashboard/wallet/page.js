@@ -3,6 +3,23 @@
 import { useState, useEffect } from "react";
 import LoadingUI from "@/components/LoadingUI";
 
+const networkLogos = {
+  "MTN": "/mtn-logo.svg",
+  "Airtel": "/airtel-logo.svg",
+  "Glo": "/glo-logo.svg",
+  "9mobile": "/9mobile-logo.svg"
+};
+
+const getNetworkFromDescription = (description) => {
+  if (!description) return null;
+  const desc = description.toLowerCase();
+  if (desc.includes("mtn")) return "MTN";
+  if (desc.includes("airtel")) return "Airtel";
+  if (desc.includes("glo")) return "Glo";
+  if (desc.includes("9mobile")) return "9mobile";
+  return null;
+};
+
 export default function WalletSummaryPage() {
   const [user, setUser] = useState(() => {
     if (typeof window !== "undefined") {
@@ -206,15 +223,32 @@ export default function WalletSummaryPage() {
                       <td className="py-3 px-4 text-gray-600">
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold">
-                          {tx.description || "Transaction"}
-                        </div>
-                        {tx.reference && (
-                          <div className="text-sm text-gray-600">
-                            Ref: {tx.reference}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-3">
+                          {(() => {
+                            const network = getNetworkFromDescription(tx.description);
+                            const logo = network ? networkLogos[network] : null;
+                            return logo ? (
+                              <div className="w-8 h-8 flex-shrink-0 p-1 bg-gray-50 rounded-lg border border-gray-100">
+                                <img src={logo} alt={network} className="w-full h-full object-contain" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-lg text-sm">
+                                {tx.type === "funding" ? "💳" : "💸"}
+                              </div>
+                            );
+                          })()}
+                          <div>
+                            <div className="font-bold text-gray-900 leading-tight">
+                              {tx.description || "Transaction"}
+                            </div>
+                            {tx.reference && (
+                              <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
+                                Ref: {tx.reference}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-semibold capitalize">

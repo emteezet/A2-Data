@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 import LoadingUI from "@/components/LoadingUI";
 
+const networkLogos = {
+  "MTN": "/mtn-logo.svg",
+  "Airtel": "/airtel-logo.svg",
+  "Glo": "/glo-logo.svg",
+  "9mobile": "/9mobile-logo.svg"
+};
+
 
 export default function TransactionsPage() {
   const [user, setUser] = useState(null);
@@ -175,20 +182,31 @@ export default function TransactionsPage() {
                   {filteredTransactions.map((tx) => (
                     <tr key={tx._id} className="border-b hover:bg-gray-50">
                       <td className="py-4 px-4">
-                        <span className="text-2xl">
-                          {getTypeIcon(tx.type)}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="font-semibold text-gray-900">
-                          {tx.type === "data"
-                            ? `${tx.network} - ${tx.dataSize}`
-                            : tx.type === "airtime"
-                              ? `${tx.network} Airtime`
-                              : "Wallet Funding"}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {tx.phoneNumber}
+                        <div className="flex items-center space-x-3">
+                          {(() => {
+                            const logo = networkLogos[tx.network];
+                            return logo ? (
+                              <div className="w-8 h-8 flex-shrink-0 p-1 bg-gray-50 rounded-lg border border-gray-100">
+                                <img src={logo} alt={tx.network} className="w-full h-full object-contain" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-lg text-sm">
+                                {getTypeIcon(tx.type)}
+                              </div>
+                            );
+                          })()}
+                          <div>
+                            <div className="font-bold text-gray-900 leading-tight">
+                              {tx.type === "data"
+                                ? `${tx.network} - ${tx.dataSize}`
+                                : tx.type === "airtime"
+                                  ? `${tx.network} Airtime`
+                                  : "Wallet Funding"}
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
+                              {tx.phoneNumber || tx.reference || "Transaction"}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="py-4 px-4 font-semibold">

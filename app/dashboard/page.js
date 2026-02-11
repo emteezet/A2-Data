@@ -4,6 +4,23 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import LoadingUI from "@/components/LoadingUI";
 
+const networkLogos = {
+  "MTN": "/mtn-logo.svg",
+  "Airtel": "/airtel-logo.svg",
+  "Glo": "/glo-logo.svg",
+  "9mobile": "/9mobile-logo.svg"
+};
+
+const getNetworkFromDescription = (description) => {
+  if (!description) return null;
+  const desc = description.toLowerCase();
+  if (desc.includes("mtn")) return "MTN";
+  if (desc.includes("airtel")) return "Airtel";
+  if (desc.includes("glo")) return "Glo";
+  if (desc.includes("9mobile")) return "9mobile";
+  return null;
+};
+
 export default function DashboardHub() {
   const [user, setUser] = useState(null);
   const [wallet, setWallet] = useState(null);

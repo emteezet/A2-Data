@@ -28,12 +28,22 @@ export default function DashboardHub() {
       const res = await fetch("/api/wallet", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch wallet: ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+
       const data = await res.json();
       if (data.success) {
         setWallet(data.data);
       }
     } catch (err) {
-      console.error("Error fetching wallet:", err);
+      console.error("Error fetching wallet:", err.message);
     }
   };
 
@@ -47,12 +57,22 @@ export default function DashboardHub() {
         },
         body: JSON.stringify({ action: "history", limit: 10 }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch transactions: ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+
       const data = await res.json();
       if (data.success) {
         setTransactions(data.data.transactions || []);
       }
     } catch (err) {
-      console.error("Error fetching transactions:", err);
+      console.error("Error fetching transactions:", err.message);
     }
   };
 

@@ -21,14 +21,14 @@ async function getAuthUser(request) {
 }
 
 export async function GET(request) {
-  await dbConnect();
-
-  const user = await getAuthUser(request);
-  if (!user) {
-    return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
-  }
-
   try {
+    await dbConnect();
+
+    const user = await getAuthUser(request);
+    if (!user) {
+      return Response.json(errorResponse("Unauthorized", 401), { status: 401 });
+    }
+
     const result = await getWalletBalance(user.userId);
 
     if (result.error) {
@@ -39,7 +39,7 @@ export async function GET(request) {
 
     return Response.json(successResponse(result.data), { status: 200 });
   } catch (error) {
-    console.error("Wallet error:", error);
+    console.error("Wallet GET error:", error);
     return Response.json(errorResponse("Internal server error", 500), {
       status: 500,
     });
@@ -93,7 +93,7 @@ export async function POST(request) {
 
     return Response.json(errorResponse("Invalid action", 400), { status: 400 });
   } catch (error) {
-    console.error("Wallet error:", error);
+    console.error("Wallet POST error:", error);
     return Response.json(errorResponse("Internal server error", 500), {
       status: 500,
     });

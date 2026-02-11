@@ -1,26 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
+import LoadingUI from "@/components/LoadingUI";
 
 export default function WalletSummaryPage() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    if (typeof window !== "undefined") {
+      const userData = localStorage.getItem("user");
+      return userData ? JSON.parse(userData) : null;
+    }
+    return null;
+  });
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
 
     if (!token) {
       window.location.href = "/auth";
       return;
     }
 
-    setUser(JSON.parse(userData));
-    fetchWallet(token);
-    fetchTransactions(token);
+    const loadData = async () => {
+      await fetchWallet(token);
+      await fetchTransactions(token);
+      setPageLoading(false);
+    };
+
+    loadData();
   }, []);
 
   const fetchWallet = async (token) => {
@@ -28,12 +38,22 @@ export default function WalletSummaryPage() {
       const res = await fetch("/api/wallet", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch wallet: ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+
       const data = await res.json();
       if (data.success) {
         setWallet(data.data);
       }
     } catch (err) {
-      console.error("Error fetching wallet:", err);
+      console.error("Error fetching wallet:", err.message);
     }
   };
 
@@ -47,12 +67,22 @@ export default function WalletSummaryPage() {
         },
         body: JSON.stringify({ action: "history", limit: 100 })
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch transactions: ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+
       const data = await res.json();
       if (data.success && data.data) {
         setTransactions(data.data.transactions || []);
       }
     } catch (err) {
-      console.error("Error fetching transactions:", err);
+      console.error("Error fetching transactions:", err.message);
     } finally {
       setLoading(false);
     }
@@ -70,7 +100,9 @@ export default function WalletSummaryPage() {
     return { spent, funded };
   };
 
-  if (!user || !wallet) return <div>Loading...</div>;
+  if (pageLoading || !user || !wallet) {
+    return <LoadingUI message="Preparing your wallet..." />;
+  }
 
   const stats = calculateStats();
 

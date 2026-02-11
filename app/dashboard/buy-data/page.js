@@ -45,12 +45,22 @@ export default function BuyDataPage() {
                 },
                 body: JSON.stringify({ action: "history", limit: 100 }),
             });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch transactions: ${res.status} ${res.statusText}`);
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Received non-JSON response from server");
+            }
+
             const data = await res.json();
             if (data.success) {
                 setTransactions(data.data.transactions || []);
             }
         } catch (err) {
-            console.error("Error fetching transactions:", err);
+            console.error("Error fetching transactions:", err.message);
         }
     };
 
@@ -59,12 +69,22 @@ export default function BuyDataPage() {
             const res = await fetch("/api/wallet", {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch wallet: ${res.status} ${res.statusText}`);
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Received non-JSON response from server");
+            }
+
             const data = await res.json();
             if (data.success) {
                 setWallet(data.data);
             }
         } catch (err) {
-            console.error("Error fetching wallet:", err);
+            console.error("Error fetching wallet:", err.message);
         }
     };
 
@@ -73,12 +93,22 @@ export default function BuyDataPage() {
             const res = await fetch("/api/data", {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch networks: ${res.status} ${res.statusText}`);
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Received non-JSON response from server");
+            }
+
             const data = await res.json();
             if (data.success) {
                 setNetworks(data.data);
             }
         } catch (err) {
-            console.error("Error fetching networks:", err);
+            console.error("Error fetching networks:", err.message);
         }
     };
 
@@ -87,12 +117,22 @@ export default function BuyDataPage() {
             const res = await fetch(`/api/data/${networkId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch plans: ${res.status} ${res.statusText}`);
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Received non-JSON response from server");
+            }
+
             const data = await res.json();
             if (data.success) {
                 setPlans(data.data);
             }
         } catch (err) {
-            console.error("Error fetching plans:", err);
+            console.error("Error fetching plans:", err.message);
         }
     };
 
@@ -150,7 +190,8 @@ export default function BuyDataPage() {
                 showNotification(data.message || "Purchase failed", "error");
             }
         } catch (err) {
-            showNotification("Error processing purchase", "error");
+            console.error("Purchase error:", err);
+            showNotification(err.message || "Error processing purchase", "error");
         } finally {
             setLoading(false);
         }

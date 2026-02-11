@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
 
+import ErrorModal from "@/components/ErrorModal";
+
 const networkLogos = {
   "MTN": "/mtn-logo.svg",
   "Airtel": "/airtel-logo.svg",
@@ -21,9 +23,11 @@ export default function AirtimePage() {
   const [selectedNetwork, setSelectedNetwork] = useState(null);
   const [amounts, setAmounts] = useState([]);
   const [selectedAmount, setSelectedAmount] = useState(null);
+  const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("select-network");
+  const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,11 +53,6 @@ export default function AirtimePage() {
         throw new Error(`Failed to fetch wallet: ${res.status} ${res.statusText}`);
       }
 
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Received non-JSON response from server");
-      }
-
       const data = await res.json();
       if (data.success) {
         setWallet(data.data);
@@ -73,11 +72,6 @@ export default function AirtimePage() {
         throw new Error(`Failed to fetch networks: ${res.status} ${res.statusText}`);
       }
 
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Received non-JSON response from server");
-      }
-
       const data = await res.json();
       if (data.success) {
         setNetworks(data.data);
@@ -91,12 +85,32 @@ export default function AirtimePage() {
     setSelectedNetwork(network);
     const airtimeAmounts = [100, 200, 500, 1000, 2000, 5000];
     setAmounts(airtimeAmounts);
-    setStep("select-amount");
+    setStep("details");
   };
 
+  const handleAmountSelect = (amt) => {
+    setSelectedAmount(amt);
+    setCustomAmount("");
+  };
+
+  const handleCustomAmountChange = (e) => {
+    const val = e.target.value;
+    if (val === "" || /^\d+$/.test(val)) {
+      setCustomAmount(val);
+      setSelectedAmount(null);
+    }
+  };
+
+  const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
+
   const handlePurchase = async () => {
-    if (!phoneNumber || !selectedAmount) {
+    if (!phoneNumber || !finalAmount) {
       showNotification("Please fill all fields", "warning");
+      return;
+    }
+
+    if (finalAmount < 50) {
+      showNotification("Minimum airtime amount is ₦50", "warning");
       return;
     }
 
@@ -113,7 +127,7 @@ export default function AirtimePage() {
         body: JSON.stringify({
           action: "airtime",
           network: selectedNetwork._id,
-          amount: selectedAmount,
+          amount: finalAmount,
           phoneNumber: phoneNumber,
         }),
       });
@@ -125,14 +139,23 @@ export default function AirtimePage() {
         setStep("select-network");
         setPhoneNumber("");
         setSelectedAmount(null);
+        setCustomAmount("");
         setSelectedNetwork(null);
         fetchWallet(token);
       } else {
-        showNotification(data.message || "Purchase failed", "error");
+        setErrorModal({
+          isOpen: true,
+          title: "Purchase Failed",
+          message: data.message || "We could not process your airtime purchase. Please check your balance and try again."
+        });
       }
     } catch (err) {
       console.error("Purchase error:", err);
-      showNotification(err.message || "Error processing purchase", "error");
+      setErrorModal({
+        isOpen: true,
+        title: "System Error",
+        message: err.message || "An error occurred while processing your request. Please try again later."
+      });
     } finally {
       setLoading(false);
     }
@@ -141,127 +164,169 @@ export default function AirtimePage() {
   if (!user) return <LoadingUI message="Setting up Secure payment gateway..." />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8 space-y-8">
       {/* Wallet Balance */}
       {wallet && (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl p-6 mb-8 relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
           <div className="relative z-10">
-            <h2 className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">Wallet Balance</h2>
-            <div className="flex items-center justify-between">
+            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">
+              Available Balance
+            </p>
+            <div className="flex items-baseline justify-between">
               <p className="text-4xl font-black">
                 ₦{wallet.balance.toLocaleString()}
               </p>
               <Link
                 href="/dashboard/fund-wallet"
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-bold py-2 px-4 rounded-full transition-all duration-300 flex items-center space-x-2"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all duration-300 flex items-center space-x-1"
               >
                 <span>Add Fund</span>
-                <span className="text-lg">+</span>
+                <span className="text-sm">+</span>
               </Link>
             </div>
           </div>
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
         </div>
       )}
 
       {/* Purchase Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        {step === "select-network" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">
-              Select Network Provider
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {networks.map((network) => (
-                <button
-                  key={network._id}
-                  onClick={() => handleSelectNetwork(network)}
-                  className="p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50/50 hover:shadow-md transition-all duration-300 flex flex-col items-center group"
-                >
-                  <div className="w-16 h-16 relative mb-4 p-2 bg-white rounded-xl shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
-                    <img
-                      src={networkLogos[network.name] || "/globe.svg"}
-                      alt={network.name}
-                      className="w-full h-full object-contain"
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-blue-600 px-6 py-4">
+          <h2 className="text-xl font-bold text-white">Buy Airtime</h2>
+        </div>
+
+        <div className="p-8">
+          {step === "select-network" ? (
+            <div className="space-y-6">
+              <label className="block text-sm font-semibold text-gray-700">
+                Select Network Provider
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {networks.map((network) => (
+                  <button
+                    key={network._id}
+                    onClick={() => handleSelectNetwork(network)}
+                    className="p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50/50 hover:shadow-md transition-all duration-300 flex flex-col items-center group"
+                  >
+                    <div className="w-12 h-12 relative mb-3 p-1 bg-white rounded-xl shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
+                      <img
+                        src={networkLogos[network.name] || "/globe.svg"}
+                        alt={network.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                      {network.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <button
+                onClick={() => {
+                  setStep("select-network");
+                  setSelectedNetwork(null);
+                  setSelectedAmount(null);
+                  setCustomAmount("");
+                }}
+                className="flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Change Network
+              </button>
+
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 p-1 bg-white rounded-lg shadow-sm">
+                  <img src={networkLogos[selectedNetwork?.name]} alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Network</p>
+                  <p className="font-bold text-gray-900">{selectedNetwork?.name}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-4">
+                    Select Amount
+                  </label>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {amounts.map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => handleAmountSelect(amt)}
+                        className={`py-3 px-2 border-2 rounded-xl transition-all font-bold text-sm ${selectedAmount === amt
+                          ? "border-blue-600 bg-blue-50 text-blue-600 shadow-sm"
+                          : "border-gray-100 hover:border-blue-200 text-gray-600"
+                          }`}
+                      >
+                        ₦{amt}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <span className="text-gray-500 font-bold">₦</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={customAmount}
+                      onChange={handleCustomAmountChange}
+                      placeholder="Enter custom amount"
+                      className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium"
                     />
                   </div>
-                  <span className="font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
-                    {network.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+                </div>
 
-        {step === "select-amount" && (
-          <div>
-            <button
-              onClick={() => {
-                setStep("select-network");
-                setSelectedNetwork(null);
-              }}
-              className="mb-4 text-blue-600 hover:underline"
-            >
-              ← Back
-            </button>
-            <h2 className="text-2xl font-bold mb-6">
-              {selectedNetwork?.name} Airtime Amounts
-            </h2>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-              {amounts.map((amt) => (
-                <button
-                  key={amt}
-                  onClick={() => setSelectedAmount(amt)}
-                  className={`p-4 border-2 rounded-lg transition font-semibold text-lg ${selectedAmount === amt
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-300 hover:border-blue-600"
-                    }`}
-                >
-                  ₦{amt}
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Enter phone number"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-700">Network:</span>
-                <span className="font-semibold">
-                  {selectedNetwork?.name}
-                </span>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-4">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="08123456789"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium h-[48px]"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-2 ml-1 italic">* Double check the number before proceeding</p>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-700">Amount:</span>
-                <span className="font-semibold">
-                  ₦{selectedAmount?.toLocaleString()}
-                </span>
-              </div>
-            </div>
 
-            <button
-              onClick={handlePurchase}
-              disabled={loading || !phoneNumber || !selectedAmount}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {loading ? "Processing..." : "Buy Airtime"}
-            </button>
-          </div>
-        )}
+              {finalAmount > 0 && (
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 flex justify-between items-center transform animate-fadeIn">
+                  <div>
+                    <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">Payment Summary</p>
+                    <p className="text-lg font-bold text-blue-900">{selectedNetwork?.name} Airtime</p>
+                    <p className="text-xs text-blue-600 font-medium">Recipient: {phoneNumber || "..."}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-black text-blue-700">₦{finalAmount.toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handlePurchase}
+                disabled={loading || !phoneNumber || finalAmount < 50}
+                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+              >
+                {loading ? "Securely Processing..." : `Buy ₦${finalAmount.toLocaleString()} Airtime`}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+        title={errorModal.title}
+        message={errorModal.message}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
+import ErrorModal from "@/components/ErrorModal";
 import Image from "next/image";
 
 const networkLogos = {
@@ -23,6 +24,7 @@ export default function BuyDataPage() {
     const [loading, setLoading] = useState(false);
     const [selectedType, setSelectedType] = useState("SME");
     const [transactions, setTransactions] = useState([]);
+    const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
     const [formData, setFormData] = useState({
         phoneNumber: "",
         dataPlanId: "",
@@ -195,17 +197,27 @@ export default function BuyDataPage() {
                 fetchWallet(token);
                 fetchTransactions(token);
             } else {
-                showNotification(data.message || "Purchase failed", "error");
+                setErrorModal({
+                    isOpen: true,
+                    title: "Purchase Failed",
+                    message: data.message || "We could not process your data purchase. Please check your balance and try again."
+                });
             }
         } catch (err) {
             console.error("Purchase error:", err);
-            showNotification(err.message || "Error processing purchase", "error");
+            setErrorModal({
+                isOpen: true,
+                title: "System Error",
+                message: err.message || "An error occurred while processing your request. Please try again later."
+            });
         } finally {
             setLoading(false);
         }
     };
 
     if (!user) return <LoadingUI message="Loading data plans..." />;
+
+    const dataTransactions = transactions.filter(t => t.dataPlanId || t.type === 'purchase');
 
     const filteredPlans = plans.filter((plan) => {
         return plan.type === selectedType;
@@ -214,9 +226,9 @@ export default function BuyDataPage() {
     const selectedPlan = plans.find((p) => p._id === formData.dataPlanId);
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8 space-y-8">
             {/* Account Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {/* Balance Card */}
                 <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
                     <div className="relative z-10">
@@ -236,16 +248,15 @@ export default function BuyDataPage() {
                             </Link>
                         </div>
                     </div>
-                    <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
                 </div>
 
-                {/* Transactions Card */}
+                {/* Data Transactions Card */}
                 <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
                     <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
-                        Transactions
+                        Data Purchases
                     </p>
                     <p className="text-3xl font-black text-gray-900">
-                        {transactions.length}
+                        {dataTransactions.length}
                     </p>
                 </div>
 
@@ -260,24 +271,24 @@ export default function BuyDataPage() {
                 </div>
             </div>
 
-            {/* New Single-Form Purchase Section */}
+            {/* Purchase Form */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="bg-blue-600 px-6 py-4">
                     <h2 className="text-xl font-bold text-white">Buy Data Bundle</h2>
                 </div>
 
-                <div className="p-8 space-y-6">
+                <div className="p-8 space-y-8">
                     {/* Network Selection */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-4">
+                        <label className="block text-sm font-semibold text-gray-700 mb-6">
                             Select Network Provider
                         </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                             {networks.map((network) => (
                                 <button
                                     key={network._id}
                                     onClick={() => handleSelectNetwork(network)}
-                                    className={`relative flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-300 group ${selectedNetwork?._id === network._id
+                                    className={`relative flex flex-col items-center p-6 rounded-2xl border-2 transition-all duration-300 group ${selectedNetwork?._id === network._id
                                         ? "border-blue-600 bg-blue-50/50 shadow-md ring-4 ring-blue-50"
                                         : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-sm"
                                         }`}
@@ -306,51 +317,48 @@ export default function BuyDataPage() {
                         </div>
                     </div>
 
-                    {/* Data Type Selection */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
-                            Data Type
-                        </label>
-                        <div className="grid grid-cols-2 gap-3 max-w-sm">
-                            <button
-                                onClick={() => handleSelectType("SME")}
-                                className={`py-2.5 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "SME"
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                    }`}
-                            >
-                                SME
-                            </button>
-                            <button
-                                onClick={() => handleSelectType("Coupon")}
-                                className={`py-2.5 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "Coupon"
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                    }`}
-                            >
-                                Coupon
-                            </button>
+                    {/* Data Type & Plan Selection Group */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Data Type Selection */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                Data Type
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleSelectType("SME")}
+                                    className={`py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "SME"
+                                        ? "bg-blue-600 text-white shadow-md"
+                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    SME
+                                </button>
+                                <button
+                                    onClick={() => handleSelectType("Coupon")}
+                                    className={`py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "Coupon"
+                                        ? "bg-blue-600 text-white shadow-md"
+                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    Coupon
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Plan Selection */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Data Plan
                             </label>
                             <select
                                 value={formData.dataPlanId}
                                 onChange={handlePlanChange}
                                 disabled={!selectedNetwork}
-                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400"
+                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400 font-medium"
                             >
                                 <option value="">
-                                    {!selectedNetwork
-                                        ? "First select a network"
-                                        : filteredPlans.length === 0
-                                            ? "No plans match filters"
-                                            : "Choose a plan"}
+                                    {!selectedNetwork ? "First select a network" : filteredPlans.length === 0 ? "No plans match filters" : "Choose a plan"}
                                 </option>
                                 {filteredPlans.map((plan) => (
                                     <option key={plan._id} value={plan._id}>
@@ -359,10 +367,26 @@ export default function BuyDataPage() {
                                 ))}
                             </select>
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Phone Number Input */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                Phone Number
+                            </label>
+                            <input
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={handlePhoneChange}
+                                placeholder="08123456789"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium"
+                            />
+                        </div>
 
                         {/* Amount Display */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Amount (₦)
                             </label>
                             <input
@@ -373,36 +397,22 @@ export default function BuyDataPage() {
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-bold outline-none"
                             />
                         </div>
-
-                        {/* Phone Number Input */}
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Phone Number
-                            </label>
-                            <input
-                                type="tel"
-                                value={formData.phoneNumber}
-                                onChange={handlePhoneChange}
-                                placeholder="08123456789"
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            />
-                        </div>
                     </div>
 
                     {/* Order Summary (Conditional) */}
                     {selectedPlan && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 flex justify-between items-center transform transition-all animate-fadeIn">
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 flex justify-between items-center transform transition-all animate-fadeIn">
                             <div>
                                 <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">
                                     Order Summary
                                 </p>
-                                <p className="text-sm font-bold text-blue-900">
+                                <p className="text-lg font-bold text-blue-900">
                                     {selectedNetwork?.name} {selectedPlan.dataSize}
                                 </p>
-                                <p className="text-xs text-blue-600">{selectedType} Plan - {selectedPlan.validity}</p>
+                                <p className="text-xs text-blue-600 font-medium mt-1">{selectedType} Plan - {selectedPlan.validity}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-2xl font-black text-blue-700">
+                                <p className="text-3xl font-black text-blue-700">
                                     ₦{selectedPlan.price.toLocaleString()}
                                 </p>
                             </div>
@@ -415,35 +425,67 @@ export default function BuyDataPage() {
                         disabled={loading || !formData.dataPlanId || !formData.phoneNumber}
                         className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                     >
-                        {loading ? (
-                            <span className="flex items-center justify-center">
-                                <svg
-                                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                Processing Transaction...
-                            </span>
-                        ) : (
-                            "Buy Now"
-                        )}
+                        {loading ? "Processing Transaction..." : "Buy Now"}
                     </button>
                 </div>
             </div>
+
+            {/* Data Transactions Section (Full Width below form) */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-gray-900">Recent Data Purchases</h2>
+                    <Link href="/dashboard/transactions" className="text-sm font-bold text-blue-600 hover:underline">
+                        View All History
+                    </Link>
+                </div>
+                <div className="p-6">
+                    {dataTransactions.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto text-2xl">
+                                📊
+                            </div>
+                            <p className="text-gray-500 font-medium">No data purchases yet</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {dataTransactions.map((tx) => (
+                                <div key={tx._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                                                📶
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-900">
+                                                    {tx.dataPlanId?.dataSize || "Data Bundle"}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {tx.phoneNumber} • {new Date(tx.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-black text-gray-900">₦{tx.amount.toLocaleString()}</p>
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tx.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
+                                                tx.status === 'failed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                {tx.status.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <ErrorModal
+                isOpen={errorModal.isOpen}
+                onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+                title={errorModal.title}
+                message={errorModal.message}
+            />
         </div>
     );
 }

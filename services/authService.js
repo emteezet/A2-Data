@@ -49,6 +49,7 @@ export async function registerUser(email, phone, password, name) {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      createdAt: user.createdAt,
       token,
     },
   };
@@ -88,6 +89,7 @@ export async function loginUser(email, password) {
       name: user.name,
       role: user.role,
       phone: user.phone,
+      createdAt: user.createdAt,
       token,
     },
   };
@@ -127,6 +129,7 @@ export async function updateUser(userId, updateData) {
       name: user.name,
       phone: user.phone,
       role: user.role,
+      createdAt: user.createdAt,
     },
   };
 }

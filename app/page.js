@@ -1,5 +1,12 @@
 "use client";
 
+const networkLogos = {
+  "MTN": "/mtn-logo.svg",
+  "Airtel": "/airtel-logo.svg",
+  "Glo": "/glo-logo.svg",
+  "9mobile": "/9mobile-logo.svg"
+};
+
 export default function HomePage() {
   const handleGetStarted = () => {
     window.location.href = "/auth";
@@ -10,10 +17,10 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white bg-opacity-10 backdrop-blur-lg text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">A2 Data</h1>
+          <h1 className="text-3xl font-bold tracking-tight">A2 Data</h1>
           <button
             onClick={handleGetStarted}
-            className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition"
+            className="bg-white text-blue-600 px-6 py-2 rounded-lg font-bold hover:bg-blue-50 transition shadow-lg"
           >
             Get Started
           </button>
@@ -23,60 +30,67 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-16">
         {/* Hero */}
         <div className="text-white text-center mb-16">
-          <h2 className="text-5xl font-bold mb-4">Buy Data Instantly</h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <h2 className="text-6xl font-black mb-6 leading-tight">Buy Data Instantly</h2>
+          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto leading-relaxed">
             Fast, secure, and reliable data purchase platform for all Nigerian
-            networks
+            networks. Top up your data in seconds.
           </p>
           <button
             onClick={handleGetStarted}
-            className="bg-yellow-400 text-blue-900 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-300 transition"
+            className="bg-yellow-400 text-blue-900 px-10 py-4 rounded-xl font-black text-xl hover:bg-yellow-300 transition-all transform hover:scale-105 shadow-xl"
           >
             Start Buying Now
           </button>
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="text-4xl mb-4">⚡</div>
-            <h3 className="text-xl font-bold mb-2">Instant Delivery</h3>
-            <p className="text-gray-600">
-              Get your data delivered to your phone within seconds of purchase
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="text-5xl mb-6">⚡</div>
+            <h3 className="text-xl font-black mb-3 text-gray-900">Instant Delivery</h3>
+            <p className="text-gray-600 leading-relaxed font-medium">
+              Get your data delivered to your phone within seconds of purchase. No delays, ever.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="text-4xl mb-4">🔒</div>
-            <h3 className="text-xl font-bold mb-2">Secure & Safe</h3>
-            <p className="text-gray-600">
-              Your transactions are encrypted and protected by industry-standard
-              security
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="text-5xl mb-6">🔒</div>
+            <h3 className="text-xl font-black mb-3 text-gray-900">Secure & Safe</h3>
+            <p className="text-gray-600 leading-relaxed font-medium">
+              Your transactions are encrypted and protected by modern, industry-standard
+              security protocols.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="text-4xl mb-4">💰</div>
-            <h3 className="text-xl font-bold mb-2">Best Rates</h3>
-            <p className="text-gray-600">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-xl font-black mb-3 text-gray-900">Best Rates</h3>
+            <p className="text-gray-600 leading-relaxed font-medium">
               Competitive pricing on all networks - MTN, Airtel, Glo, and
-              9mobile
+              9mobile. Save more with A2 Data.
             </p>
           </div>
         </div>
 
         {/* Networks */}
-        <div className="mt-16 bg-white rounded-lg p-8 shadow-lg">
-          <h3 className="text-2xl font-bold mb-8 text-center">
+        <div className="mt-24 bg-white/10 backdrop-blur-md rounded-3xl p-12 shadow-2xl border border-white/10">
+          <h3 className="text-3xl font-black mb-12 text-center text-white">
             Supported Networks
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["MTN", "Airtel", "Glo", "9mobile"].map((network) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {Object.keys(networkLogos).map((network) => (
               <div
                 key={network}
-                className="bg-gray-100 p-6 rounded-lg text-center font-bold"
+                className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 group"
               >
-                {network}
+                <div className="w-16 h-16 relative mb-4">
+                  <img
+                    src={networkLogos[network]}
+                    alt={network}
+                    className="w-full h-full object-contain filter group-hover:drop-shadow-md"
+                  />
+                </div>
+                <span className="font-black text-gray-800 text-lg uppercase tracking-widest">{network}</span>
               </div>
             ))}
           </div>

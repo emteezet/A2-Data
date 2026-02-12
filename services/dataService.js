@@ -151,6 +151,8 @@ export async function purchaseData(
 
   return {
     success: providerResult.success,
+    error: providerResult.success ? undefined : (providerResult.error || "Data purchase failed at provider. Your wallet has been refunded."),
+    statusCode: providerResult.success ? undefined : 400,
     data: {
       transactionId: transaction._id,
       reference: transaction.reference,
@@ -240,6 +242,8 @@ export async function purchaseAirtime(
 
   return {
     success: providerResult.success,
+    error: providerResult.success ? undefined : (providerResult.error || "Airtime purchase failed at provider. Your wallet has been refunded."),
+    statusCode: providerResult.success ? undefined : 400,
     data: {
       transactionId: transaction._id,
       reference: transaction.reference,

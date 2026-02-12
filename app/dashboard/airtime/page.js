@@ -118,7 +118,12 @@ export default function AirtimePage() {
             setStep("details");
           }
         }
+      } else {
+        setSelectedNetwork(null);
       }
+    } else {
+      setSelectedNetwork(null);
+      if (phoneNumber.length === 0) setStep("select-network");
     }
   }, [phoneNumber, networks]);
 

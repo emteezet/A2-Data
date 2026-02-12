@@ -175,7 +175,11 @@ export default function BuyDataPage() {
                 if (networkObj && (!selectedNetwork || selectedNetwork.name !== detected)) {
                     setSelectedNetwork(networkObj);
                 }
+            } else {
+                setSelectedNetwork(null);
             }
+        } else {
+            setSelectedNetwork(null);
         }
     }, [formData.phoneNumber, networks]);
 

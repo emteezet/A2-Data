@@ -103,9 +103,65 @@ export default function AirtimePage() {
 
   const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
 
+  // Network detection and validation
+  useEffect(() => {
+    if (phoneNumber.length >= 4) {
+      const detected = detectNetwork(phoneNumber);
+      if (detected) {
+        // Find the network object that matches the detected name
+        const networkObj = networks.find(n => n.name.toLowerCase() === detected.toLowerCase());
+        if (networkObj && (!selectedNetwork || selectedNetwork.name !== detected)) {
+          setSelectedNetwork(networkObj);
+          if (step === "select-network") {
+            const airtimeAmounts = [100, 200, 500, 1000, 2000, 5000];
+            setAmounts(airtimeAmounts);
+            setStep("details");
+          }
+        }
+      }
+    }
+  }, [phoneNumber, networks]);
+
+  const detectNetwork = (num) => {
+    let cleanNumber = num.replace(/\D/g, '');
+    if (cleanNumber.startsWith('234')) {
+      cleanNumber = '0' + cleanNumber.slice(3);
+    } else if (!cleanNumber.startsWith('0') && cleanNumber.length === 10) {
+      cleanNumber = '0' + cleanNumber;
+    }
+    const prefix = cleanNumber.substring(0, 4);
+    const prefixes = {
+      MTN: ['0703', '0706', '0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906', '0913', '0916', '0702', '0704'],
+      Airtel: ['0701', '0708', '0802', '0808', '0812', '0901', '0902', '0904', '0907', '0912', '0917'],
+      Glo: ['0705', '0805', '0807', '0811', '0815', '0905', '0915'],
+      '9mobile': ['0809', '0817', '0818', '0908', '0909']
+    };
+    for (const [network, prefList] of Object.entries(prefixes)) {
+      if (prefList.includes(prefix)) return network;
+    }
+    return null;
+  };
+
+  const validatePhone = (num) => {
+    const re = /^(\+234|234|0)(70|80|81|90|91)\d{8}$/;
+    return re.test(num.replace(/\s/g, ""));
+  };
+
+  const normalizeForApi = (num) => {
+    let cleanNumber = num.replace(/\D/g, '');
+    if (cleanNumber.startsWith('0')) return '234' + cleanNumber.slice(1);
+    if (cleanNumber.startsWith('234')) return cleanNumber;
+    return '234' + cleanNumber;
+  };
+
   const handlePurchase = async () => {
     if (!phoneNumber || !finalAmount) {
       showNotification("Please fill all fields", "warning");
+      return;
+    }
+
+    if (!validatePhone(phoneNumber)) {
+      showNotification("Invalid Nigerian phone number format", "error");
       return;
     }
 
@@ -128,7 +184,7 @@ export default function AirtimePage() {
           action: "airtime",
           network: selectedNetwork._id,
           amount: finalAmount,
-          phoneNumber: phoneNumber,
+          phoneNumber: normalizeForApi(phoneNumber),
         }),
       });
 
@@ -196,16 +252,52 @@ export default function AirtimePage() {
 
         <div className="p-8">
           {step === "select-network" ? (
-            <div className="space-y-6">
-              <label className="block text-sm font-semibold text-gray-700">
-                Select Network Provider
-              </label>
+            <div className="space-y-8">
+              {/* Quick Number Input */}
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-sm animate-fadeIn">
+                <label className="block text-sm font-bold text-gray-700 mb-4 flex items-center">
+                  <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] mr-2">1</span>
+                  Enter Phone Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <img src="/globe.svg" className="h-5 w-5 text-gray-400 opacity-50" alt="" />
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 11) setPhoneNumber(val);
+                    }}
+                    placeholder="e.g. 08031234567"
+                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-lg"
+                    maxLength={11}
+                  />
+                  {phoneNumber.length >= 4 && !selectedNetwork && (
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter animate-pulse">Detecting...</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-3 ml-1 font-medium italic">Type your number and we'll auto-detect the network!</p>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-gray-100"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 bg-white text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Or Select Manually</span>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {networks.map((network) => (
                   <button
                     key={network._id}
                     onClick={() => handleSelectNetwork(network)}
-                    className="p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50/50 hover:shadow-md transition-all duration-300 flex flex-col items-center group"
+                    className="p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50/50 hover:shadow-md transition-all duration-300 flex flex-col items-center group relative overflow-hidden"
                   >
                     <div className="w-12 h-12 relative mb-3 p-1 bg-white rounded-xl shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
                       <img

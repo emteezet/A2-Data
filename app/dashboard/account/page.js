@@ -171,8 +171,12 @@ export default function AccountPage() {
                     type="tel"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 11) setFormData(prev => ({ ...prev, phone: val }));
+                    }}
                     placeholder="08123456789"
+                    maxLength={11}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium"
                   />
                 </div>

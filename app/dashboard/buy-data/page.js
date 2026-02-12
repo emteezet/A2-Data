@@ -166,9 +166,59 @@ export default function BuyDataPage() {
         setFormData((prev) => ({ ...prev, dataPlanId: e.target.value }));
     };
 
+    // Network detection and validation
+    useEffect(() => {
+        if (formData.phoneNumber.length >= 4) {
+            const detected = detectNetwork(formData.phoneNumber);
+            if (detected) {
+                const networkObj = networks.find(n => n.name.toLowerCase() === detected.toLowerCase());
+                if (networkObj && (!selectedNetwork || selectedNetwork.name !== detected)) {
+                    setSelectedNetwork(networkObj);
+                }
+            }
+        }
+    }, [formData.phoneNumber, networks]);
+
+    const detectNetwork = (num) => {
+        let cleanNumber = num.replace(/\D/g, '');
+        if (cleanNumber.startsWith('234')) {
+            cleanNumber = '0' + cleanNumber.slice(3);
+        } else if (!cleanNumber.startsWith('0') && cleanNumber.length === 10) {
+            cleanNumber = '0' + cleanNumber;
+        }
+        const prefix = cleanNumber.substring(0, 4);
+        const prefixes = {
+            MTN: ['0703', '0706', '0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906', '0913', '0916', '0702', '0704'],
+            Airtel: ['0701', '0708', '0802', '0808', '0812', '0901', '0902', '0904', '0907', '0912', '0917'],
+            Glo: ['0705', '0805', '0807', '0811', '0815', '0905', '0915'],
+            '9mobile': ['0809', '0817', '0818', '0908', '0909']
+        };
+        for (const [network, prefList] of Object.entries(prefixes)) {
+            if (prefList.includes(prefix)) return network;
+        }
+        return null;
+    };
+
+    const validatePhone = (num) => {
+        const re = /^(\+234|234|0)(70|80|81|90|91)\d{8}$/;
+        return re.test(num.replace(/\s/g, ""));
+    };
+
+    const normalizeForApi = (num) => {
+        let cleanNumber = num.replace(/\D/g, '');
+        if (cleanNumber.startsWith('0')) return '234' + cleanNumber.slice(1);
+        if (cleanNumber.startsWith('234')) return cleanNumber;
+        return '234' + cleanNumber;
+    };
+
     const handlePurchase = async () => {
         if (!formData.phoneNumber || !formData.dataPlanId) {
             showNotification("Please fill all fields", "warning");
+            return;
+        }
+
+        if (!validatePhone(formData.phoneNumber)) {
+            showNotification("Invalid Nigerian phone number format", "error");
             return;
         }
 
@@ -185,7 +235,7 @@ export default function BuyDataPage() {
                 body: JSON.stringify({
                     action: "purchase",
                     dataPlanId: formData.dataPlanId,
-                    phoneNumber: formData.phoneNumber,
+                    phoneNumber: normalizeForApi(formData.phoneNumber),
                 }),
             });
 
@@ -277,7 +327,36 @@ export default function BuyDataPage() {
                     <h2 className="text-xl font-bold text-white">Buy Data Bundle</h2>
                 </div>
 
-                <div className="p-8 space-y-8">
+                <div className="p-8 space-y-10">
+                    {/* Quick Number Input */}
+                    <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm animate-fadeIn">
+                        <label className="block text-sm font-bold text-gray-700 mb-4 flex items-center">
+                            <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] mr-2">1</span>
+                            Enter Phone Number
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <img src="/globe.svg" className="h-5 w-5 opacity-40" alt="" />
+                            </div>
+                            <input
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '');
+                                    if (val.length <= 11) setFormData((prev) => ({ ...prev, phoneNumber: val }));
+                                }}
+                                placeholder="e.g. 08123456789"
+                                className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-black text-lg"
+                                maxLength={11}
+                            />
+                            {formData.phoneNumber.length >= 4 && !selectedNetwork && (
+                                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter animate-pulse">Detecting...</span>
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-3 ml-1 font-medium italic">Type your number to auto-detect and highlight the network!</p>
+                    </div>
                     {/* Network Selection */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-6">
@@ -370,22 +449,8 @@ export default function BuyDataPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Phone Number Input */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                Phone Number
-                            </label>
-                            <input
-                                type="tel"
-                                value={formData.phoneNumber}
-                                onChange={handlePhoneChange}
-                                placeholder="08123456789"
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium"
-                            />
-                        </div>
-
                         {/* Amount Display */}
-                        <div>
+                        <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Amount (₦)
                             </label>

@@ -1,5 +1,7 @@
 import Wallet from "@/models/Wallet";
 import Transaction from "@/models/Transaction";
+import DataPlan from "@/models/DataPlan";
+import Network from "@/models/Network";
 import CommissionLog from "@/models/CommissionLog";
 import { generateReference } from "@/lib/helpers";
 import { TRANSACTION_STATUS, PAYMENT_METHOD } from "@/config/constants";

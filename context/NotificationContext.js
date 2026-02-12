@@ -39,7 +39,7 @@ export const NotificationProvider = ({ children }) => {
     return (
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
-            <div className="fixed top-24 right-6 z-[999999] flex flex-col items-end space-y-4 pointer-events-none max-w-[calc(100vw-3rem)]">
+            <div className="float top-24 right-24 z-[99999] flex flex-col items-end space-y-4 pointer-events-none max-w-[calc(100vw-3rem)]">
                 {notifications.map((n) => (
                     <div key={n.id} className="pointer-events-auto w-full flex justify-end">
                         <Toast

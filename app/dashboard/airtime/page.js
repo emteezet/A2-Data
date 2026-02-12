@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
-
+import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
 
 const networkLogos = {
@@ -28,6 +28,7 @@ export default function AirtimePage() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("select-network");
   const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
+  const [successModal, setSuccessModal] = useState({ isOpen: false, title: "", message: "" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -196,13 +197,17 @@ export default function AirtimePage() {
       const data = await res.json();
 
       if (data.success) {
-        showNotification("Airtime purchase successful!", "success");
         setStep("select-network");
         setPhoneNumber("");
         setSelectedAmount(null);
         setCustomAmount("");
         setSelectedNetwork(null);
         fetchWallet(token);
+        setSuccessModal({
+          isOpen: true,
+          title: "Purchase Successful",
+          message: `You have successfully purchased ₦${finalAmount.toLocaleString()} airtime for ${normalizeForApi(phoneNumber)}.`
+        });
       } else {
         setErrorModal({
           isOpen: true,
@@ -429,6 +434,13 @@ export default function AirtimePage() {
           )}
         </div>
       </div>
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        title={successModal.title}
+        message={successModal.message}
+      />
 
       <ErrorModal
         isOpen={errorModal.isOpen}

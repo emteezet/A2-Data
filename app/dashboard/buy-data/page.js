@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
+import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
 import Image from "next/image";
 
@@ -34,6 +35,7 @@ function BuyDataContent() {
     const [selectedType, setSelectedType] = useState("SME");
     const [transactions, setTransactions] = useState([]);
     const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
+    const [successModal, setSuccessModal] = useState({ isOpen: false, title: "", message: "" });
     const [formData, setFormData] = useState({
         phoneNumber: "",
         dataPlanId: "",
@@ -287,10 +289,14 @@ function BuyDataContent() {
             const data = await res.json();
 
             if (data.success) {
-                showNotification("Purchase successful! Data will be delivered shortly.", "success");
                 setFormData({ phoneNumber: "", dataPlanId: "" });
                 fetchWallet(token);
                 fetchTransactions(token);
+                setSuccessModal({
+                    isOpen: true,
+                    title: "Purchase Successful",
+                    message: `Your data purchase for ${normalizeForApi(formData.phoneNumber)} was successful. Data will be delivered shortly.`
+                });
             } else {
                 setErrorModal({
                     isOpen: true,
@@ -598,6 +604,13 @@ function BuyDataContent() {
                     )}
                 </div>
             </div>
+
+            <SuccessModal
+                isOpen={successModal.isOpen}
+                onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+                title={successModal.title}
+                message={successModal.message}
+            />
 
             <ErrorModal
                 isOpen={errorModal.isOpen}

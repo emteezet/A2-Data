@@ -278,9 +278,9 @@ export default function BuyDataPage() {
     return (
         <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8 space-y-8">
             {/* Account Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {/* Balance Card */}
-                <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
+                <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
                     <div className="relative z-10">
                         <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">
                             Balance

@@ -104,8 +104,8 @@ export default function DashboardHub() {
       </div>
 
       {/* Account Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden group">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden group">
           <div className="relative z-10">
             <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">
               Available Balance

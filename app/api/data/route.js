@@ -3,6 +3,7 @@ import {
   getNetworks,
   getNetworkPlans,
   purchaseData,
+  purchaseAirtime,
   getTransactionDetails,
 } from "@/services/dataService";
 import { verifyToken } from "@/lib/jwt";
@@ -76,6 +77,34 @@ export async function POST(request) {
         successResponse(
           result.data,
           result.success ? "Purchase successful" : "Purchase initiated",
+        ),
+        { status: result.success ? 200 : 202 },
+      );
+    }
+
+    if (action === "airtime") {
+      const { network, amount, phoneNumber } = body;
+      if (!network || !amount || !phoneNumber) {
+        return Response.json(errorResponse("Missing required fields", 400), {
+          status: 400,
+        });
+      }
+
+      const result = await purchaseAirtime(user.userId, network, amount, phoneNumber);
+
+      if (result.error) {
+        return Response.json(
+          errorResponse(result.error, result.statusCode || 400),
+          {
+            status: result.statusCode || 400,
+          },
+        );
+      }
+
+      return Response.json(
+        successResponse(
+          result.data,
+          result.success ? "Airtime purchase successful" : "Airtime purchase initiated",
         ),
         { status: result.success ? 200 : 202 },
       );

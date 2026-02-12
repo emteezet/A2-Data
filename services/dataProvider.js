@@ -4,68 +4,89 @@ import { PROVIDER_STATUS, MAX_RETRIES } from "@/config/constants";
 
 class DataProvider {
   constructor() {
-    this.baseURL = process.env.DATA_PROVIDER_URL;
-    this.apiKey = process.env.DATA_PROVIDER_API_KEY;
+    this.baseURL = process.env.DATA_PROVIDER_URL || "https://enterprise.mobilenig.com/api";
+    this.publicKey = process.env.MOBILENIG_PUBLIC_KEY;
+    this.secretKey = process.env.MOBILENIG_SECRET_KEY;
     this.client = axios.create({
       baseURL: this.baseURL,
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        "Public-Key": this.publicKey,
+        "Secret-Key": this.secretKey,
         "Content-Type": "application/json",
       },
     });
   }
 
-  generateRequestId() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const hour = String(now.getHours()).padStart(2, "0");
-    const minute = String(now.getMinutes()).padStart(2, "0");
-    const seconds = String(now.getSeconds()).padStart(2, "0");
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-
-    return `${year}${month}${day}${hour}${minute}${seconds}${random}`;
-  }
-
-  async buyData(dataPlanCode, phoneNumber, reference, networkCode = "mtn-data") {
+  async buyAirtime(networkCode, phoneNumber, amount, transId) {
     try {
-      const requestId = this.generateRequestId();
-
-      const response = await this.client.post("/pay", {
-        request_id: requestId,
-        serviceID: networkCode,
-        billersCode: phoneNumber,
-        variation_code: dataPlanCode,
-        amount: 0, // VTpass usually ignores this if variation_code is provided
-        phone: phoneNumber,
+      const response = await this.client.post("/airtime", {
+        network: networkCode,
+        phoneNumber: phoneNumber,
+        amount: amount,
+        trans_id: transId,
       });
 
-      if (response.data.code === "000") {
+      // MobileNig success codes are usually 200, 201, 202
+      if (response.status >= 200 && response.status < 300) {
         return {
           success: true,
-          providerReference: response.data.content.transactions.transactionId,
+          providerReference: response.data.trans_id || transId,
           status: PROVIDER_STATUS.DELIVERED,
+          data: response.data
         };
       } else {
         return {
           success: false,
-          error: response.data.response_description || "VTpass error",
+          error: response.data.message || "MobileNig airtime error",
           status: PROVIDER_STATUS.FAILED,
         };
       }
     } catch (error) {
+      console.error("MobileNig Airtime Error:", error.response?.data || error.message);
       return {
         success: false,
-        error: error.response?.data?.response_description || error.message,
+        error: error.response?.data?.message || error.message,
         status: PROVIDER_STATUS.FAILED,
       };
     }
   }
 
-  async checkStatus(providerReference) {
+  async buyData(dataPlanCode, phoneNumber, transId, networkCode) {
     try {
-      const response = await this.client.get(`/status/${providerReference}`);
+      const response = await this.client.post("/data", {
+        network: networkCode,
+        phoneNumber: phoneNumber,
+        dataPlan: dataPlanCode,
+        trans_id: transId,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return {
+          success: true,
+          providerReference: response.data.trans_id || transId,
+          status: PROVIDER_STATUS.DELIVERED,
+          data: response.data
+        };
+      } else {
+        return {
+          success: false,
+          error: response.data.message || "MobileNig data error",
+          status: PROVIDER_STATUS.FAILED,
+        };
+      }
+    } catch (error) {
+      console.error("MobileNig Data Error:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+        status: PROVIDER_STATUS.FAILED,
+      };
+    }
+  }
+
+  async checkStatus(transId) {
+    try {
+      const response = await this.client.get(`/query-transaction/${transId}`);
       return {
         success: true,
         status: response.data.status,
@@ -80,7 +101,7 @@ class DataProvider {
   }
 
   async retry(transactionId) {
-    const transaction = await Transaction.findById(transactionId);
+    const transaction = await Transaction.findById(transactionId).populate("dataPlanId");
 
     if (!transaction) {
       return { error: "Transaction not found" };
@@ -91,11 +112,23 @@ class DataProvider {
     }
 
     try {
-      const result = await this.buyData(
-        transaction.dataPlanId.toString(),
-        transaction.phoneNumber,
-        transaction.reference,
-      );
+      let result;
+      if (transaction.dataPlanId) {
+        result = await this.buyData(
+          transaction.dataPlanId.providerCode,
+          transaction.phoneNumber,
+          transaction.reference,
+          transaction.networkId.providerCode
+        );
+      } else {
+        // Assume airtime if no dataPlanId
+        result = await this.buyAirtime(
+          transaction.networkId.providerCode,
+          transaction.phoneNumber,
+          transaction.amount,
+          transaction.reference
+        );
+      }
 
       if (result.success) {
         transaction.providerReference = result.providerReference;

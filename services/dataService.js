@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import DataPlan from "@/models/DataPlan";
 import Network from "@/models/Network";
 import Transaction from "@/models/Transaction";
@@ -131,7 +132,96 @@ export async function purchaseData(
     await CommissionLog.create({
       transactionId: transaction._id,
       amount: commission,
-      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE),
+      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
+    });
+  } else {
+    transaction.providerStatus = "failed";
+    transaction.errorMessage = providerResult.error;
+    transaction.status = TRANSACTION_STATUS.FAILED;
+
+    // Refund wallet
+    wallet.balance += amount;
+    wallet.totalSpent -= amount;
+    await wallet.save();
+
+    transaction.errorMessage = (transaction.errorMessage || "") + " (Refunded)";
+  }
+
+  await transaction.save();
+
+  return {
+    success: providerResult.success,
+    data: {
+      transactionId: transaction._id,
+      reference: transaction.reference,
+      status: transaction.status,
+    },
+  };
+}
+
+export async function purchaseAirtime(
+  userId,
+  networkId,
+  amount,
+  phoneNumber,
+  paymentMethod = PAYMENT_METHOD.WALLET,
+) {
+  const network = await Network.findById(networkId);
+  if (!network) {
+    return { error: "Network not found", statusCode: 404 };
+  }
+
+  const reference = generateReference("AIRTIME");
+  const commission = calculateCommission(
+    amount,
+    parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
+  );
+  const agentProfit = amount - commission;
+
+  const transaction = await Transaction.create({
+    reference,
+    userId,
+    networkId: network._id,
+    phoneNumber,
+    amount,
+    platformCommission: commission,
+    agentProfit,
+    status: TRANSACTION_STATUS.PENDING,
+    paymentMethod,
+  });
+
+  // Deduct from wallet
+  const Wallet = mongoose.models.Wallet || mongoose.model("Wallet");
+  const wallet = await Wallet.findOne({ userId });
+  if (!wallet || wallet.balance < amount) {
+    transaction.status = TRANSACTION_STATUS.FAILED;
+    transaction.errorMessage = "Insufficient wallet balance";
+    await transaction.save();
+    return { error: "Insufficient wallet balance", statusCode: 400 };
+  }
+
+  wallet.balance -= amount;
+  wallet.totalSpent += amount;
+  await wallet.save();
+
+  // Attempt to deliver airtime
+  const providerResult = await dataProvider.buyAirtime(
+    network.providerCode,
+    phoneNumber,
+    amount,
+    reference
+  );
+
+  if (providerResult.success) {
+    transaction.providerReference = providerResult.providerReference;
+    transaction.providerStatus = providerResult.status;
+    transaction.status = TRANSACTION_STATUS.SUCCESS;
+
+    // Log commission
+    await CommissionLog.create({
+      transactionId: transaction._id,
+      amount: commission,
+      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
     });
   } else {
     transaction.providerStatus = "failed";

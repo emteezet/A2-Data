@@ -261,7 +261,15 @@ export default function AirtimePage() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <img src="/globe.svg" className="h-5 w-5 text-gray-400 opacity-50" alt="" />
+                    {selectedNetwork ? (
+                      <img
+                        src={networkLogos[selectedNetwork.name]}
+                        className="h-6 w-6 object-contain animate-scaleIn"
+                        alt={selectedNetwork.name}
+                      />
+                    ) : (
+                      <span className="text-xl opacity-40 text-gray-400">📶</span>
+                    )}
                   </div>
                   <input
                     type="tel"

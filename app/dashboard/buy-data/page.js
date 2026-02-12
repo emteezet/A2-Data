@@ -336,7 +336,15 @@ export default function BuyDataPage() {
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <img src="/globe.svg" className="h-5 w-5 opacity-40" alt="" />
+                                {selectedNetwork ? (
+                                    <img
+                                        src={networkLogos[selectedNetwork.name]}
+                                        className="h-6 w-6 object-contain animate-scaleIn"
+                                        alt={selectedNetwork.name}
+                                    />
+                                ) : (
+                                    <span className="text-xl opacity-40">📶</span>
+                                )}
                             </div>
                             <input
                                 type="tel"

@@ -203,7 +203,7 @@ export default function PricingPage() {
 
                       <button
                         onClick={() =>
-                          (window.location.href = "/dashboard")
+                          (window.location.href = `/dashboard/buy-data?networkId=${selectedNetwork._id}&planId=${plan._id}&type=${plan.type}`)
                         }
                         className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
                       >

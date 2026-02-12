@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
@@ -15,6 +16,14 @@ const networkLogos = {
 };
 
 export default function BuyDataPage() {
+    return (
+        <Suspense fallback={<LoadingUI message="Loading purchase page..." />}>
+            <BuyDataContent />
+        </Suspense>
+    );
+}
+
+function BuyDataContent() {
     const { showNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [wallet, setWallet] = useState(null);
@@ -29,6 +38,8 @@ export default function BuyDataPage() {
         phoneNumber: "",
         dataPlanId: "",
     });
+    const searchParams = useSearchParams();
+    const phoneInputRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -43,7 +54,37 @@ export default function BuyDataPage() {
         fetchWallet(token);
         fetchNetworks(token);
         fetchTransactions(token);
-    }, []);
+
+        // Handle URL parameters
+        const networkId = searchParams.get("networkId");
+        const planId = searchParams.get("planId");
+        const type = searchParams.get("type");
+
+        if (type) setSelectedType(type);
+        if (networkId) {
+            fetchPlans(networkId, token);
+            // We'll set the planId in another effect once plans are loaded
+        }
+    }, [searchParams]);
+
+    // Handle plan selection from URL parameters once plans are loaded
+    useEffect(() => {
+        const planId = searchParams.get("planId");
+        const networkId = searchParams.get("networkId");
+
+        if (planId && plans.length > 0) {
+            setFormData(prev => ({ ...prev, dataPlanId: planId }));
+            // Focus phone input when a plan is pre-selected
+            if (phoneInputRef.current) {
+                phoneInputRef.current.focus();
+            }
+        }
+
+        if (networkId && networks.length > 0) {
+            const network = networks.find(n => n._id === networkId);
+            if (network) setSelectedNetwork(network);
+        }
+    }, [plans, networks, searchParams]);
 
     const fetchTransactions = async (token) => {
         try {
@@ -360,6 +401,7 @@ export default function BuyDataPage() {
                                 placeholder="e.g. 08123456789"
                                 className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-black text-lg"
                                 maxLength={11}
+                                ref={phoneInputRef}
                             />
                             {formData.phoneNumber.length >= 4 && !selectedNetwork && (
                                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center">

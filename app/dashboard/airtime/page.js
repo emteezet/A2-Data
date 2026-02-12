@@ -297,24 +297,28 @@ export default function AirtimePage() {
               </div>
 
               {finalAmount > 0 && (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 flex justify-between items-center transform animate-fadeIn">
+                <div className={`border rounded-xl p-6 flex justify-between items-center transform animate-fadeIn ${wallet?.balance < finalAmount ? "bg-red-50 border-red-100" : "bg-blue-50 border-blue-100"}`}>
                   <div>
-                    <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">Payment Summary</p>
-                    <p className="text-lg font-bold text-blue-900">{selectedNetwork?.name} Airtime</p>
-                    <p className="text-xs text-blue-600 font-medium">Recipient: {phoneNumber || "..."}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${wallet?.balance < finalAmount ? "text-red-500" : "text-blue-500"}`}>Payment Summary</p>
+                    <p className={`text-lg font-bold ${wallet?.balance < finalAmount ? "text-red-900" : "text-blue-900"}`}>{selectedNetwork?.name} Airtime</p>
+                    <p className={`text-xs font-medium ${wallet?.balance < finalAmount ? "text-red-600" : "text-blue-600"}`}>
+                      {wallet?.balance < finalAmount ? "Insufficient Wallet Balance" : `Recipient: ${phoneNumber || "..."}`}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-3xl font-black text-blue-700">₦{finalAmount.toLocaleString()}</p>
+                    <p className={`text-3xl font-black ${wallet?.balance < finalAmount ? "text-red-700" : "text-blue-700"}`}>₦{finalAmount.toLocaleString()}</p>
                   </div>
                 </div>
               )}
 
               <button
                 onClick={handlePurchase}
-                disabled={loading || !phoneNumber || finalAmount < 50}
-                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                disabled={loading || !phoneNumber || finalAmount < 50 || (wallet && wallet.balance < finalAmount)}
+                className={`w-full text-white py-4 rounded-xl font-bold text-lg active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 disabled:shadow-none ${wallet?.balance < finalAmount ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
               >
-                {loading ? "Securely Processing..." : `Buy ₦${finalAmount.toLocaleString()} Airtime`}
+                {loading ? "Securely Processing..." :
+                  wallet?.balance < finalAmount ? "Insufficient Balance" :
+                    `Buy ₦${finalAmount.toLocaleString()} Airtime`}
               </button>
             </div>
           )}

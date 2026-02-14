@@ -39,6 +39,13 @@ A complete, production-ready wallet-based data sales platform built with Next.js
 - **Styling**: Tailwind CSS
 - **Security**: bcryptjs, crypto modules
 
+
+## 📏 Development Standards
+
+- **File Extensions**:
+  - Use `.jsx` for all React components (e.g., `page.jsx`, `components/Button.jsx`).
+  - Use `.js` for pure JavaScript files (e.g., utilities, API routes, configurations).
+
 ## 📋 Prerequisites
 
 - Node.js 18+ and npm

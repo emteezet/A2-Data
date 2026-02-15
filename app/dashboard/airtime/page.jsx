@@ -178,6 +178,7 @@ export default function AirtimePage() {
 
     setLoading(true);
     const token = localStorage.getItem("token");
+    const idempotencyKey = `AIRTIME-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
     try {
       const res = await fetch("/api/data", {
@@ -191,6 +192,7 @@ export default function AirtimePage() {
           network: selectedNetwork._id,
           amount: finalAmount,
           phoneNumber: normalizeForApi(phoneNumber),
+          idempotencyKey,
         }),
       });
 

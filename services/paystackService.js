@@ -3,7 +3,7 @@ import { verifyPaystackSignature } from "@/lib/crypto";
 import { generateReference } from "@/lib/helpers";
 import Transaction from "@/models/Transaction";
 import CommissionLog from "@/models/CommissionLog";
-import { TRANSACTION_STATUS, PAYMENT_METHOD, TRANSACTION_TYPE } from "@/config/constants";
+import { TRANSACTION_STATUS, PAYMENT_METHOD, TRANSACTION_TYPE, DEFAULT_PLATFORM_COMMISSION } from "@/config/constants";
 import { fundWallet } from "@/services/walletService";
 
 const PAYSTACK_BASE_URL = "https://api.paystack.co";
@@ -91,6 +91,12 @@ export async function handlePaystackWebhook(payload, signature) {
       return { error: "Transaction not found", statusCode: 404 };
     }
 
+    // Idempotency check: if transaction is already success, don't re-process
+    if (transaction.status === TRANSACTION_STATUS.SUCCESS) {
+      console.log(`[PaystackService] Webhook received for already successful transaction: ${data.reference}`);
+      return { success: true, transaction, message: "Transaction already processed" };
+    }
+
     transaction.status = TRANSACTION_STATUS.SUCCESS;
     await transaction.save();
 
@@ -107,12 +113,12 @@ export async function handlePaystackWebhook(payload, signature) {
     // Log commission (only for purchases)
     const commission =
       (transaction.amount *
-        parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE)) /
+        parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION)) /
       100;
     await CommissionLog.create({
       transactionId: transaction._id,
       amount: commission,
-      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE),
+      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
     });
 
     return { success: true, transaction };

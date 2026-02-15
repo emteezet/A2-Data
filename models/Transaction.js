@@ -8,6 +8,12 @@ const transactionSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    idempotencyKey: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -4,7 +4,7 @@ import Network from "@/models/Network";
 import Transaction from "@/models/Transaction";
 import CommissionLog from "@/models/CommissionLog";
 import { generateReference, calculateCommission } from "@/lib/helpers";
-import { TRANSACTION_STATUS, PAYMENT_METHOD } from "@/config/constants";
+import { TRANSACTION_STATUS, PAYMENT_METHOD, DEFAULT_PLATFORM_COMMISSION } from "@/config/constants";
 import { dataProvider } from "./dataProvider";
 
 export async function getNetworks() {
@@ -105,7 +105,27 @@ export async function purchaseData(
   dataPlanId,
   phoneNumber,
   paymentMethod = PAYMENT_METHOD.WALLET,
+  idempotencyKey = null,
 ) {
+  await dbConnect();
+
+  // Idempotency check
+  if (idempotencyKey) {
+    const existingTransaction = await Transaction.findOne({ idempotencyKey });
+    if (existingTransaction) {
+      console.log(`[DataService] Duplicate request detected for idempotencyKey: ${idempotencyKey}`);
+      return {
+        success: existingTransaction.status === TRANSACTION_STATUS.SUCCESS,
+        data: {
+          transactionId: existingTransaction._id,
+          reference: existingTransaction.reference,
+          status: existingTransaction.status,
+          isDuplicate: true,
+        },
+      };
+    }
+  }
+
   const dataPlan = await DataPlan.findById(dataPlanId).populate("networkId");
 
   if (!dataPlan) {
@@ -116,12 +136,13 @@ export async function purchaseData(
   const amount = dataPlan.price;
   const commission = calculateCommission(
     amount,
-    parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE),
+    parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
   );
   const agentProfit = amount - commission;
 
   const transaction = await Transaction.create({
     reference,
+    idempotencyKey,
     userId,
     dataPlanId,
     networkId: dataPlan.networkId._id,
@@ -170,7 +191,7 @@ export async function purchaseData(
     await CommissionLog.create({
       transactionId: transaction._id,
       amount: commission,
-      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
+      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
     });
   } else {
     transaction.providerStatus = "failed";
@@ -205,7 +226,27 @@ export async function purchaseAirtime(
   amount,
   phoneNumber,
   paymentMethod = PAYMENT_METHOD.WALLET,
+  idempotencyKey = null,
 ) {
+  await dbConnect();
+
+  // Idempotency check
+  if (idempotencyKey) {
+    const existingTransaction = await Transaction.findOne({ idempotencyKey });
+    if (existingTransaction) {
+      console.log(`[DataService] Duplicate airtime request detected: ${idempotencyKey}`);
+      return {
+        success: existingTransaction.status === TRANSACTION_STATUS.SUCCESS,
+        data: {
+          transactionId: existingTransaction._id,
+          reference: existingTransaction.reference,
+          status: existingTransaction.status,
+          isDuplicate: true,
+        },
+      };
+    }
+  }
+
   const network = await Network.findById(networkId);
   if (!network) {
     return { error: "Network not found", statusCode: 404 };
@@ -214,12 +255,13 @@ export async function purchaseAirtime(
   const reference = generateReference("AIRTIME");
   const commission = calculateCommission(
     amount,
-    parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
+    parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
   );
   const agentProfit = amount - commission;
 
   const transaction = await Transaction.create({
     reference,
+    idempotencyKey,
     userId,
     networkId: network._id,
     phoneNumber,
@@ -261,7 +303,7 @@ export async function purchaseAirtime(
     await CommissionLog.create({
       transactionId: transaction._id,
       amount: commission,
-      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || "5"),
+      percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
     });
   } else {
     transaction.providerStatus = "failed";
@@ -359,7 +401,7 @@ export async function handleVTPassWebhook(payload) {
       await CommissionLog.create({
         transactionId: transaction._id,
         amount: transaction.platformCommission,
-        percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE),
+        percentage: parseFloat(process.env.PLATFORM_COMMISSION_PERCENTAGE || DEFAULT_PLATFORM_COMMISSION),
       });
     }
 

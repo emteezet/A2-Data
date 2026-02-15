@@ -49,3 +49,5 @@ export const COMMISSION_STATUS = {
 
 export const MAX_RETRIES = 3;
 export const RETRY_DELAY = 5000; // 5 seconds
+
+export const DEFAULT_PLATFORM_COMMISSION = 5; // 5%

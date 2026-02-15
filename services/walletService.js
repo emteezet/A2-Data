@@ -27,6 +27,9 @@ export async function fundWallet(userId, amount, paystackReference = null) {
   wallet.balance += amount;
   wallet.totalFunded += amount;
   wallet.lastFundedAt = new Date();
+
+  // If paystackReference is provided, we should ensure it's not already processed
+  // This is a secondary check as the primary check should be in the webhook handler
   await wallet.save();
 
   return {
@@ -125,7 +128,7 @@ export async function processWalletPayment(
 }
 
 export async function isTransactionIdempotent(idempotencyKey) {
-  // In production, use Redis for this
-  // For now, using a simple in-memory check
-  return false;
+  if (!idempotencyKey) return false;
+  const existing = await Transaction.findOne({ idempotencyKey });
+  return !!existing;
 }

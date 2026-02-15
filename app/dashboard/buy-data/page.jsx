@@ -263,6 +263,7 @@ function BuyDataContent() {
 
         setLoading(true);
         const token = localStorage.getItem("token");
+        const idempotencyKey = `DATA-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
         try {
             const res = await fetch("/api/data", {
@@ -275,6 +276,7 @@ function BuyDataContent() {
                     action: "purchase",
                     dataPlanId: formData.dataPlanId,
                     phoneNumber: normalizeForApi(formData.phoneNumber),
+                    idempotencyKey,
                 }),
             });
 

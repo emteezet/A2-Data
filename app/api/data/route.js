@@ -53,7 +53,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { action, dataPlanId, phoneNumber } = body;
+    const { action, dataPlanId, phoneNumber, idempotencyKey } = body;
 
     if (action === "purchase") {
       if (!dataPlanId || !phoneNumber) {
@@ -62,7 +62,7 @@ export async function POST(request) {
         });
       }
 
-      const result = await purchaseData(user.userId, dataPlanId, phoneNumber);
+      const result = await purchaseData(user.userId, dataPlanId, phoneNumber, body.paymentMethod, idempotencyKey);
 
       if (result.error) {
         return Response.json(
@@ -90,7 +90,7 @@ export async function POST(request) {
         });
       }
 
-      const result = await purchaseAirtime(user.userId, network, amount, phoneNumber);
+      const result = await purchaseAirtime(user.userId, network, amount, phoneNumber, body.paymentMethod, idempotencyKey);
 
       if (result.error) {
         return Response.json(

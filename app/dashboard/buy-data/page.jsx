@@ -32,7 +32,6 @@ function BuyDataContent() {
     const [selectedNetwork, setSelectedNetwork] = useState(null);
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedType, setSelectedType] = useState("SME");
     const [transactions, setTransactions] = useState([]);
     const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
     const [successModal, setSuccessModal] = useState({ isOpen: false, title: "", message: "" });
@@ -60,9 +59,6 @@ function BuyDataContent() {
         // Handle URL parameters
         const networkId = searchParams.get("networkId");
         const planId = searchParams.get("planId");
-        const type = searchParams.get("type");
-
-        if (type) setSelectedType(type);
         if (networkId) {
             fetchPlans(networkId, token);
             // We'll set the planId in another effect once plans are loaded
@@ -196,10 +192,6 @@ function BuyDataContent() {
         setFormData((prev) => ({ ...prev, dataPlanId: "" }));
     };
 
-    const handleSelectType = (type) => {
-        setSelectedType(type);
-        setFormData((prev) => ({ ...prev, dataPlanId: "" }));
-    };
 
     const handlePhoneChange = (e) => {
         setFormData((prev) => ({ ...prev, phoneNumber: e.target.value }));
@@ -320,9 +312,7 @@ function BuyDataContent() {
 
     const dataTransactions = transactions.filter(t => t.dataPlanId || t.type === 'purchase');
 
-    const filteredPlans = plans.filter((plan) => {
-        return plan.type === selectedType;
-    });
+    const filteredPlans = [...plans].sort((a, b) => a.price - b.price);
 
     const selectedPlan = plans.find((p) => p._id === formData.dataPlanId);
 
@@ -456,56 +446,27 @@ function BuyDataContent() {
                         </div>
                     </div>
 
-                    {/* Data Type & Plan Selection Group */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Data Type Selection */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                Data Type
-                            </label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => handleSelectType("SME")}
-                                    className={`py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "SME"
-                                        ? "bg-blue-600 text-white shadow-md"
-                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                        }`}
-                                >
-                                    SME
-                                </button>
-                                <button
-                                    onClick={() => handleSelectType("Coupon")}
-                                    className={`py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${selectedType === "Coupon"
-                                        ? "bg-blue-600 text-white shadow-md"
-                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                        }`}
-                                >
-                                    Coupon
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Plan Selection */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                Data Plan
-                            </label>
-                            <select
-                                value={formData.dataPlanId}
-                                onChange={handlePlanChange}
-                                disabled={!selectedNetwork}
-                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400 font-medium"
-                            >
-                                <option value="">
-                                    {!selectedNetwork ? "First select a network" : filteredPlans.length === 0 ? "No plans match filters" : "Choose a plan"}
+                    {/* Plan Selection */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                            <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] mr-2">2</span>
+                            Select Data Plan
+                        </label>
+                        <select
+                            value={formData.dataPlanId}
+                            onChange={handlePlanChange}
+                            disabled={!selectedNetwork}
+                            className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400 font-black text-lg h-16"
+                        >
+                            <option value="">
+                                {!selectedNetwork ? "First enter/select a network" : filteredPlans.length === 0 ? "No plans available" : "Choose a data plan"}
+                            </option>
+                            {filteredPlans.map((plan) => (
+                                <option key={plan._id} value={plan._id}>
+                                    {plan.name} - ₦{plan.price.toLocaleString()}
                                 </option>
-                                {filteredPlans.map((plan) => (
-                                    <option key={plan._id} value={plan._id}>
-                                        {plan.dataSize} - ₦{plan.price}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -534,7 +495,7 @@ function BuyDataContent() {
                                 <p className="text-lg font-bold text-blue-900">
                                     {selectedNetwork?.name} {selectedPlan.dataSize}
                                 </p>
-                                <p className="text-xs text-blue-600 font-medium mt-1">{selectedType} Plan - {selectedPlan.validity}</p>
+                                <p className="text-xs text-blue-600 font-medium mt-1">{selectedPlan.validity}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-3xl font-black text-blue-700">

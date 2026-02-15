@@ -7,10 +7,11 @@ class DataProvider {
     this.baseURL = process.env.DATA_PROVIDER_URL || "https://enterprise.mobilenig.com/api/v2";
     this.publicKey = process.env.MOBILENIG_PUBLIC_KEY;
     this.secretKey = process.env.MOBILENIG_SECRET_KEY;
+
+    // Client without default auth, will set per request
     this.client = axios.create({
       baseURL: this.baseURL,
       headers: {
-        "Authorization": `Bearer ${this.publicKey}`,
         "Content-Type": "application/json",
       },
     });
@@ -51,6 +52,35 @@ class DataProvider {
     return map[String(networkCode)] || null;
   }
 
+  // Helper to ensure trans_id is <= 15 chars for MobileNig
+  formatTransId(transId) {
+    if (!transId) return Date.now().toString();
+    // Use last 15 chars if too long, or just the ID if short enough
+    // Ideally we want unique, so maybe last 15 digits of timestamp/random
+    return String(transId).slice(0, 15);
+  }
+
+  async checkBalance() {
+    try {
+      // Balance check requires PUBLIC KEY and /control/balance endpoint
+      const response = await this.client.get("/control/balance", {
+        headers: { "Authorization": `Bearer ${this.publicKey}` }
+      });
+
+      return {
+        success: true,
+        balance: response.data?.details?.balance || 0,
+        raw: response.data
+      };
+    } catch (error) {
+      console.error("MobileNig Balance Error:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message
+      };
+    }
+  }
+
   async buyAirtime(networkCode, phoneNumber, amount, transId) {
     try {
       const serviceId = this.getAirtimeServiceId(networkCode);
@@ -62,12 +92,15 @@ class DataProvider {
         };
       }
 
-      const response = await this.client.post("/services", {
+      // Transactions require SECRET KEY and Trailing Slash on /services/
+      const response = await this.client.post("/services/", {
         service_id: serviceId,
         requestType: "PREMIUM",
         phoneNumber: phoneNumber,
         amount: amount,
-        trans_id: transId,
+        trans_id: this.formatTransId(transId),
+      }, {
+        headers: { "Authorization": `Bearer ${this.secretKey}` }
       });
 
       const data = response.data;
@@ -112,12 +145,15 @@ class DataProvider {
         };
       }
 
-      const response = await this.client.post("/services", {
+      // Transactions require SECRET KEY and Trailing Slash on /services/
+      const response = await this.client.post("/services/", {
         service_id: serviceId,
         service_type: "SME",
         beneficiary: phoneNumber,
-        trans_id: transId,
+        trans_id: this.formatTransId(transId),
         amount: dataPlanCode, // dataPlanCode is the plan amount/code for MobileNig
+      }, {
+        headers: { "Authorization": `Bearer ${this.secretKey}` }
       });
 
       const data = response.data;
@@ -152,7 +188,12 @@ class DataProvider {
 
   async checkStatus(transId) {
     try {
-      const response = await this.client.get(`/control/query_transaction?trans_id=${transId}`);
+      // Status check via control/query_transaction usually requires Public Key (like services_status)
+      // Checking docs/tests: services_status used Public Key. 
+      // Safest to use Public Key for GET /control endpoints.
+      const response = await this.client.get(`/control/query_transaction?trans_id=${transId}`, {
+        headers: { "Authorization": `Bearer ${this.publicKey}` }
+      });
       return {
         success: true,
         status: response.data.status || response.data.message,
@@ -200,12 +241,14 @@ class DataProvider {
         transaction.providerReference = result.providerReference;
         transaction.providerStatus = result.status;
         transaction.retryCount += 1;
+        transaction.errorMessage = undefined; // Clear previous error
         await transaction.save();
 
         return { success: true, transaction };
       } else {
         transaction.retryCount += 1;
         transaction.providerStatus = PROVIDER_STATUS.RETRY;
+        transaction.errorMessage = result.error;
         await transaction.save();
 
         return { error: result.error };

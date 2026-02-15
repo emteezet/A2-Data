@@ -477,7 +477,16 @@ POST /api/admin
 
 ## 🐛 Troubleshooting
 
-### MongoDB Connection Error
+### MobileNig "Invalid API Key" Error (400 Bad Request)
+
+- **Cause**: The API keys in `.env.local` are invalid, expired, or your IP address is not whitelisted.
+- **Solution**:
+  1. Log in to your MobileNig dashboard.
+  2. Regenerate your API keys if needed.
+  3. **CRITICAL**: Go to Developer > Register IP and whitelist your current IP address.
+  4. Ensure your account is upgraded to at least "STANDARD" level.
+  5. Update `.env.local` with the new keys.
+  6. **If error persists with valid keys**: Contact MobileNig support (+2347064764979) as your account may not be fully provisioned for API transactions despite the upgrade.
 
 ```
 Solution: Ensure MongoDB is running and MONGODB_URI is correct

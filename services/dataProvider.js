@@ -59,14 +59,12 @@ class DataProvider {
    */
 
   // Map network codes (providerCode from our DB) to MobileNig service_id
-  // Map network codes (providerCode from our DB) to MobileNig service_id
-  // Based on search results, Airtime IDs might be network names directly
   getAirtimeServiceId(networkCode) {
     const map = {
-      "1": "MTN",  // Was ABA (Carpaddy)
-      "2": "AIRTEL",  // Was ABC
-      "3": "GLO",  // Was ABB
-      "4": "9MOBILE",  // Was ABD
+      "1": "ABA", // MTN
+      "2": "ABC", // Airtel
+      "3": "ABB", // Glo
+      "4": "ABD", // 9mobile
     };
     return map[String(networkCode)] || null;
   }
@@ -219,6 +217,8 @@ class DataProvider {
         };
       }
 
+      console.log(`[DataProvider] buyAirtime: serviceId=${serviceId}, phone=${phoneNumber}, amount=${amount}, transId=${transId}`);
+
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
@@ -231,6 +231,7 @@ class DataProvider {
       });
 
       const data = response.data;
+      console.log(`[DataProvider] buyAirtime Response:`, JSON.stringify(data));
 
       // MobileNig returns 200 OK even for failures. We MUST check the body.
       // Success formats observed: { message: "success", ... } or { status: "success", ... }
@@ -273,8 +274,27 @@ class DataProvider {
         };
       }
 
-      // MobileNig expects a numeric amount — use the plan price, not the providerCode string
-      const numericAmount = parseFloat(dataPlanPrice || dataPlanCode);
+      // MobileNig expects a numeric amount — for MTN SME, this must match the nominal amount (e.g. 1000 for 1GB code 1000)
+      // For other networks or service types, we use the plan price.
+      const isMtnSme = String(networkCode) === "1" && (serviceType === "SME" || !serviceType);
+
+      console.log(`[DataProvider] buyData Logic Debug:`, {
+        networkCode,
+        serviceType,
+        isMtnSme,
+        dataPlanCode,
+        dataPlanPrice,
+        isNetwork1: String(networkCode) === "1",
+        isSme: serviceType === "SME",
+        isFalsyType: !serviceType
+      });
+
+      const numericAmount = isMtnSme
+        ? parseFloat(dataPlanCode)
+        : parseFloat(dataPlanPrice || dataPlanCode);
+
+      console.log(`[DataProvider] Final amount determined: ${numericAmount}`);
+
       if (isNaN(numericAmount) || numericAmount <= 0) {
         return {
           success: false,

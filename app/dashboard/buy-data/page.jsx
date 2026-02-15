@@ -7,6 +7,7 @@ import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
+import CountUp from "@/components/CountUp";
 import Image from "next/image";
 
 const networkLogos = {
@@ -312,7 +313,7 @@ function BuyDataContent() {
 
     if (!user) return <LoadingUI message="Loading data plans..." />;
 
-    const dataTransactions = transactions.filter(t => t.dataPlanId || t.type === 'purchase');
+    const dataTransactions = transactions.filter(t => (t.dataPlanId || t.type === 'purchase') && t.status === 'success');
 
     const filteredPlans = [...plans].sort((a, b) => a.price - b.price);
 
@@ -330,7 +331,7 @@ function BuyDataContent() {
                         </p>
                         <div className="flex items-baseline justify-between">
                             <p className="text-3xl font-black">
-                                ₦{wallet?.balance.toLocaleString() || "0"}
+                                ₦<CountUp end={wallet?.balance || 0} />
                             </p>
                             <Link
                                 href="/dashboard/fund-wallet"
@@ -346,10 +347,10 @@ function BuyDataContent() {
                 {/* Data Transactions Card */}
                 <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
                     <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
-                        Data Purchases
+                        Success Purchases
                     </p>
                     <p className="text-3xl font-black text-gray-900">
-                        {dataTransactions.length}
+                        <CountUp end={dataTransactions.length} />
                     </p>
                 </div>
 
@@ -359,7 +360,7 @@ function BuyDataContent() {
                         Total Spent
                     </p>
                     <p className="text-3xl font-black text-blue-600">
-                        ₦{wallet?.totalSpent?.toLocaleString() || "0"}
+                        ₦<CountUp end={wallet?.totalSpent || 0} />
                     </p>
                 </div>
             </div>

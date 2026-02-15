@@ -6,6 +6,7 @@ import { useNotification } from "@/context/NotificationContext";
 import LoadingUI from "@/components/LoadingUI";
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
+import CountUp from "@/components/CountUp";
 
 const networkLogos = {
   "MTN": "/mtn-logo.svg",
@@ -242,7 +243,7 @@ export default function AirtimePage() {
             </p>
             <div className="flex items-baseline justify-between">
               <p className="text-4xl font-black">
-                ₦{wallet.balance.toLocaleString()}
+                ₦<CountUp end={wallet.balance} />
               </p>
               <Link
                 href="/dashboard/fund-wallet"
@@ -291,7 +292,7 @@ export default function AirtimePage() {
                       if (val.length <= 11) setPhoneNumber(val);
                     }}
                     placeholder="e.g. 08031234567"
-                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-lg"
+                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-lg placeholder:font-bold placeholder:text-gray-300"
                     maxLength={11}
                   />
                   {phoneNumber.length >= 4 && !selectedNetwork && (
@@ -400,9 +401,13 @@ export default function AirtimePage() {
                   <input
                     type="tel"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 11) setPhoneNumber(val);
+                    }}
                     placeholder="08123456789"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-medium h-[48px]"
+                    className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-lg placeholder:font-bold placeholder:text-gray-300"
+                    maxLength={11}
                   />
                   <p className="text-[10px] text-gray-400 mt-2 ml-1 italic">* Double check the number before proceeding</p>
                 </div>

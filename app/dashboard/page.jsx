@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import LoadingUI from "@/components/LoadingUI";
+import CountUp from "@/components/CountUp";
 
 const networkLogos = {
   "MTN": "/mtn-logo.svg",
@@ -95,6 +96,8 @@ export default function DashboardHub() {
 
   if (!user) return <LoadingUI message="Preparing your dashboard..." />;
 
+  const successfulTransactions = transactions.filter(t => t.status === 'success');
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
       {/* Welcome Message */}
@@ -112,7 +115,7 @@ export default function DashboardHub() {
             </p>
             <div className="flex items-baseline justify-between">
               <p className="text-4xl font-black">
-                ₦{wallet?.balance.toLocaleString() || "0"}
+                ₦<CountUp end={wallet?.balance || 0} />
               </p>
               <Link
                 href="/dashboard/fund-wallet"
@@ -129,10 +132,10 @@ export default function DashboardHub() {
 
         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
           <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
-            Total Transactions
+            Success Transactions
           </p>
           <p className="text-4xl font-black text-gray-900">
-            {transactions.length}
+            <CountUp end={successfulTransactions.length} />
           </p>
         </div>
 
@@ -141,7 +144,7 @@ export default function DashboardHub() {
             Total Spent
           </p>
           <p className="text-4xl font-black text-blue-600">
-            ₦{wallet?.totalSpent?.toLocaleString() || "0"}
+            ₦<CountUp end={wallet?.totalSpent || 0} />
           </p>
         </div>
       </div>

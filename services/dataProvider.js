@@ -306,11 +306,11 @@ class DataProvider {
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        service_type: serviceType || "SME",
+        requestType: serviceType || "SME", // Changed from service_type to requestType
         beneficiary: this.formatPhoneNumber(phoneNumber),
         trans_id: this.formatTransId(transId),
         code: dataPlanCode, // Plan identifier required by MobileNig
-        amount: numericAmount, // Plan price
+        amount: String(numericAmount), // Ensure amount is sent as string to avoid type mismatch
       }, {
         headers: { "Authorization": `Bearer ${this.secretKey}` }
       });

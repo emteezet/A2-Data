@@ -30,6 +30,41 @@ export async function getNetworkPlans(networkId) {
       return { error: "Network ID is required", statusCode: 400 };
     }
 
+    // Look up the network to get its providerCode
+    const network = await Network.findById(networkId);
+    if (!network) {
+      return { error: "Network not found", statusCode: 404 };
+    }
+
+    // Try fetching live plans from MobileNig API
+    try {
+      const liveResult = await dataProvider.getLiveDataPlans(network.providerCode);
+
+      if (liveResult.success && liveResult.plans.length > 0) {
+        // Transform MobileNig response to match our frontend format
+        const networkName = network.name.toUpperCase();
+        const transformedPlans = liveResult.plans.map((plan, index) => ({
+          _id: `live_${networkId}_${index}_${plan.amount || plan.price}`,
+          networkId: networkId,
+          name: plan.name || `${networkName} ${plan.dataSize || plan.data_size || plan.amount + "MB"} (${plan.type || "SME"})`,
+          dataSize: plan.dataSize || plan.data_size || plan.size || `${plan.amount}MB`,
+          price: parseFloat(plan.price || plan.amount || 0),
+          validity: plan.validity || plan.duration || plan.valid || "30 days",
+          providerCode: String(plan.code || plan.product_code || plan.price || plan.amount),
+          isActive: true,
+          type: plan.type || "SME",
+          description: plan.description || "",
+        }));
+
+        console.log(`[DataService] Fetched ${transformedPlans.length} live plans for ${network.name}`);
+        return { success: true, data: transformedPlans, source: "live" };
+      }
+    } catch (liveError) {
+      console.warn(`[DataService] Live plan fetch failed for ${network.name}, falling back to DB:`, liveError.message);
+    }
+
+    // Fallback: use local DB-cached plans
+    console.log(`[DataService] Using DB-cached plans for ${network.name}`);
     const plans = await DataPlan.find({
       networkId,
       isActive: true,
@@ -42,10 +77,11 @@ export async function getNetworkPlans(networkId) {
         success: true,
         data: [],
         message: "No plans available for this network",
+        source: "db",
       };
     }
 
-    return { success: true, data: plans };
+    return { success: true, data: plans, source: "db" };
   } catch (error) {
     console.error("Error fetching network plans:", error);
     return {
@@ -121,6 +157,8 @@ export async function purchaseData(
     phoneNumber,
     reference,
     dataPlan.networkId.providerCode,
+    dataPlan.price,
+    dataPlan.type,
   );
 
   if (providerResult.success) {

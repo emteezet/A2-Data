@@ -18,6 +18,33 @@ class DataProvider {
   }
 
   /**
+   * Format phone number to 11 digits (080...) for MobileNig.
+   * MobileNig requires the local format for beneficiaries.
+   * Converts 23480... to 080...
+   */
+  formatPhoneNumber(phone) {
+    if (!phone) return "";
+    let clean = String(phone).replace(/\D/g, "");
+
+    // If it's already 11 digits starting with 0, it's correct
+    if (clean.length === 11 && clean.startsWith("0")) {
+      return clean;
+    }
+
+    // If it starts with 234 and is 13 digits, convert to 11 digits starting with 0
+    if (clean.startsWith("234") && clean.length === 13) {
+      return "0" + clean.slice(3);
+    }
+
+    // If it's 10 digits and doesn't start with 0 (e.g. 80...), prepend 0
+    if (clean.length === 10 && !clean.startsWith("0")) {
+      return "0" + clean;
+    }
+
+    return clean;
+  }
+
+  /**
    * MobileNig Airtime service_id mapping:
    * MTN STANDARD = "ABA", MTN PREMIUM = "ABA" (requestType: PREMIUM), MTN AWUF = "ABA" (requestType: AWUF)
    * GLO STANDARD = "ABB", GLO PREMIUM = "ABB" (requestType: PREMIUM)
@@ -32,12 +59,14 @@ class DataProvider {
    */
 
   // Map network codes (providerCode from our DB) to MobileNig service_id
+  // Map network codes (providerCode from our DB) to MobileNig service_id
+  // Based on search results, Airtime IDs might be network names directly
   getAirtimeServiceId(networkCode) {
     const map = {
-      "1": "ABA",  // MTN
-      "2": "ABC",  // Airtel
-      "3": "ABB",  // Glo
-      "4": "ABD",  // 9mobile
+      "1": "MTN",  // Was ABA (Carpaddy)
+      "2": "AIRTEL",  // Was ABC
+      "3": "GLO",  // Was ABB
+      "4": "9MOBILE",  // Was ABD
     };
     return map[String(networkCode)] || null;
   }
@@ -81,6 +110,104 @@ class DataProvider {
     }
   }
 
+  /**
+   * Check if a data service is currently available.
+   * GET /control/services_status?service_id=BCA&requestType=SME
+   * Uses PUBLIC KEY.
+   */
+  async getServiceStatus(serviceId, requestType = "SME") {
+    try {
+      const response = await this.client.get("/control/services_status", {
+        params: { service_id: serviceId, requestType },
+        headers: { "Authorization": `Bearer ${this.publicKey}` },
+        timeout: 15000,
+      });
+
+      return {
+        success: true,
+        available: response.data?.status === "available" || response.data?.statusCode === "200",
+        raw: response.data,
+      };
+    } catch (error) {
+      console.error("MobileNig Service Status Error:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+      };
+    }
+  }
+
+  /**
+   * Fetch live data plan prices from MobileNig.
+   * GET /control/services_prices?service_id=BCA&service_type=SME
+   * Uses PUBLIC KEY.
+   * Returns array of plans with amount, validity, dataSize etc.
+   */
+  async getDataPlans(serviceId, serviceType = "SME") {
+    try {
+      const response = await this.client.get("/control/services_prices", {
+        params: { service_id: serviceId, service_type: serviceType },
+        headers: { "Authorization": `Bearer ${this.publicKey}` },
+        timeout: 15000,
+      });
+
+      const data = response.data;
+
+      // MobileNig returns plans in data.details or data directly
+      const plans = data?.details || data?.data || data?.plans || [];
+
+      return {
+        success: true,
+        plans: Array.isArray(plans) ? plans : [],
+        raw: data,
+      };
+    } catch (error) {
+      console.error("MobileNig Data Plans Error:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+        plans: [],
+      };
+    }
+  }
+
+  /**
+   * Fetch all live data plans for a network (both SME and GIFTING).
+   * Maps networkCode (providerCode) to MobileNig service_id.
+   */
+  async getLiveDataPlans(networkCode) {
+    const serviceId = this.getDataServiceId(networkCode);
+    if (!serviceId) {
+      return { success: false, error: `Unsupported network code: ${networkCode}`, plans: [] };
+    }
+
+    // Fetch SME plans
+    const smeResult = await this.getDataPlans(serviceId, "SME");
+
+    // Fetch GIFTING plans (optional, may not exist for all networks)
+    const giftingResult = await this.getDataPlans(serviceId, "GIFTING");
+
+    const allPlans = [];
+
+    if (smeResult.success && smeResult.plans.length > 0) {
+      smeResult.plans.forEach(plan => {
+        allPlans.push({ ...plan, type: "SME" });
+      });
+    }
+
+    if (giftingResult.success && giftingResult.plans.length > 0) {
+      giftingResult.plans.forEach(plan => {
+        allPlans.push({ ...plan, type: "Coupon" });
+      });
+    }
+
+    return {
+      success: allPlans.length > 0,
+      plans: allPlans,
+      error: allPlans.length === 0 ? (smeResult.error || "No plans available") : undefined,
+    };
+  }
+
   async buyAirtime(networkCode, phoneNumber, amount, transId) {
     try {
       const serviceId = this.getAirtimeServiceId(networkCode);
@@ -96,7 +223,7 @@ class DataProvider {
       const response = await this.client.post("/services/", {
         service_id: serviceId,
         requestType: "PREMIUM",
-        phoneNumber: phoneNumber,
+        phoneNumber: this.formatPhoneNumber(phoneNumber),
         amount: amount,
         trans_id: this.formatTransId(transId),
       }, {
@@ -105,8 +232,9 @@ class DataProvider {
 
       const data = response.data;
 
-      // MobileNig returns message: "success" on success
-      if (data.message === "success" || (response.status >= 200 && response.status < 300 && data.statusCode !== "SEC010")) {
+      // MobileNig returns 200 OK even for failures. We MUST check the body.
+      // Success formats observed: { message: "success", ... } or { status: "success", ... }
+      if (data.message === "success" || data.status === "success" || data.statusCode === "200") {
         return {
           success: true,
           providerReference: data.trans_id || transId,
@@ -134,7 +262,7 @@ class DataProvider {
     }
   }
 
-  async buyData(dataPlanCode, phoneNumber, transId, networkCode) {
+  async buyData(dataPlanCode, phoneNumber, transId, networkCode, dataPlanPrice, serviceType = "SME") {
     try {
       const serviceId = this.getDataServiceId(networkCode);
       if (!serviceId) {
@@ -145,20 +273,31 @@ class DataProvider {
         };
       }
 
+      // MobileNig expects a numeric amount — use the plan price, not the providerCode string
+      const numericAmount = parseFloat(dataPlanPrice || dataPlanCode);
+      if (isNaN(numericAmount) || numericAmount <= 0) {
+        return {
+          success: false,
+          error: `Invalid data plan amount: ${dataPlanPrice || dataPlanCode}`,
+          status: PROVIDER_STATUS.FAILED,
+        };
+      }
+
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        service_type: "SME",
-        beneficiary: phoneNumber,
+        service_type: serviceType || "SME",
+        beneficiary: this.formatPhoneNumber(phoneNumber),
         trans_id: this.formatTransId(transId),
-        amount: dataPlanCode, // dataPlanCode is the plan amount/code for MobileNig
+        code: dataPlanCode, // Plan identifier required by MobileNig
+        amount: numericAmount, // Plan price
       }, {
         headers: { "Authorization": `Bearer ${this.secretKey}` }
       });
 
       const data = response.data;
 
-      if (data.message === "success" || (response.status >= 200 && response.status < 300 && data.statusCode !== "SEC010")) {
+      if (data.message === "success" || data.status === "success" || data.statusCode === "200") {
         return {
           success: true,
           providerReference: data.trans_id || transId,
@@ -225,7 +364,9 @@ class DataProvider {
           transaction.dataPlanId.providerCode,
           transaction.phoneNumber,
           transaction.reference,
-          transaction.networkId.providerCode
+          transaction.networkId.providerCode,
+          transaction.amount,
+          transaction.dataPlanId.type || "SME"
         );
       } else {
         // Assume airtime if no dataPlanId

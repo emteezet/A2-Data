@@ -20,7 +20,11 @@ async function check() {
 
         if (networkCount > 0) {
             const networks = await Network.find();
-            networks.forEach(n => console.log(`- ${n.name} (${n._id})`));
+            for (const n of networks) {
+                console.log(`\n--- ${n.name} (${n._id}) ---`);
+                const plans = await DataPlan.find({ networkId: n._id });
+                plans.forEach(p => console.log(`  - ${p.name}: Price=${p.price}, Code=${p.providerCode}, Type=${p.type}`));
+            }
         }
 
         process.exit(0);

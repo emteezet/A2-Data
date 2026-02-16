@@ -235,21 +235,26 @@ export default function TransactionsPage() {
                               </div>
                             );
                           })()}
-                          <div>
-                            <div className="font-bold text-gray-900 leading-tight">
-                              {tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId
-                                ? `${tx.network || tx.networkId?.name || "Network"} - ${tx.dataSize || tx.dataPlanId?.dataSize || "Data"}`
-                                : tx.type === "airtime" || tx.type === "airtime_purchase"
-                                  ? `${tx.network || tx.networkId?.name || "Network"} Airtime`
-                                  : tx.type === "funding" || tx.type === "wallet_funding"
-                                    ? "Wallet Funding"
-                                    : tx.type === "purchase"
-                                      ? (tx.dataPlanId ? `${tx.network || "Network"} Data` : `${tx.network || "Network"} Airtime`)
-                                      : "Transaction"}
-                            </div>
-                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
-                              {tx.phoneNumber || tx.reference || "Transaction"}
-                            </div>
+                          <span className="font-semibold text-gray-900 capitalize">
+                            {tx.type?.split('_')[0] || 'Transaction'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div>
+                          <div className="font-bold text-gray-900 leading-tight">
+                            {tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId
+                              ? `${tx.network || tx.networkId?.name || "Network"} - ${tx.dataSize || tx.dataPlanId?.dataSize || "Data"}`
+                              : tx.type === "airtime" || tx.type === "airtime_purchase"
+                                ? `${tx.network || tx.networkId?.name || "Network"} Airtime`
+                                : tx.type === "funding" || tx.type === "wallet_funding"
+                                  ? "Wallet Funding"
+                                  : tx.type === "purchase"
+                                    ? (tx.dataPlanId ? `${tx.network || "Network"} Data` : `${tx.network || "Network"} Airtime`)
+                                    : "Transaction"}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
+                            {tx.phoneNumber || tx.reference || "Transaction"}
                           </div>
                         </div>
                       </td>
@@ -265,7 +270,7 @@ export default function TransactionsPage() {
                           {tx.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">
+                      <td className="py-4 px-4 text-gray-600 font-medium">
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
                     </tr>

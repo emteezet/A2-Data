@@ -6,6 +6,7 @@ import CommissionLog from "@/models/CommissionLog";
 import { generateReference, calculateCommission } from "@/lib/helpers";
 import { TRANSACTION_STATUS, PAYMENT_METHOD, DEFAULT_PLATFORM_COMMISSION } from "@/config/constants";
 import { dataProvider } from "./dataProvider";
+import dbConnect from "@/lib/mongodb";
 
 export async function getNetworks() {
   try {
@@ -43,18 +44,24 @@ export async function getNetworkPlans(networkId) {
       if (liveResult.success && liveResult.plans.length > 0) {
         // Transform MobileNig response to match our frontend format
         const networkName = network.name.toUpperCase();
-        const transformedPlans = liveResult.plans.map((plan, index) => ({
-          _id: `live_${networkId}_${index}_${plan.amount || plan.price}`,
-          networkId: networkId,
-          name: plan.name || `${networkName} ${plan.dataSize || plan.data_size || plan.amount + "MB"} (${plan.type || "SME"})`,
-          dataSize: plan.dataSize || plan.data_size || plan.size || `${plan.amount}MB`,
-          price: parseFloat(plan.price || plan.amount || 0),
-          validity: plan.validity || plan.duration || plan.valid || "30 days",
-          providerCode: String(plan.code || plan.product_code || plan.price || plan.amount),
-          isActive: true,
-          type: plan.type || "SME",
-          description: plan.description || "",
-        }));
+        const transformedPlans = liveResult.plans.map((plan, index) => {
+          const providerPrice = parseFloat(plan.price || plan.amount || 0);
+          const providerProductCode = String(plan.productCode || plan.code || plan.product_code || plan.price || plan.amount);
+
+          return {
+            _id: `live_${networkId}_${index}_${providerProductCode}`,
+            networkId: networkId,
+            name: plan.name || `${networkName} ${plan.dataSize || plan.data_size || plan.amount || ""} (${plan.type || "SME"})`,
+            dataSize: plan.dataSize || plan.data_size || plan.size || (plan.name ? plan.name.split(' ')[0] : "DATA"),
+            price: providerPrice,
+            nominalAmount: providerPrice, // For most networks, amount to send is the price. buyData logic handles overrides.
+            validity: plan.validity || plan.duration || plan.valid || "30 days",
+            providerCode: providerProductCode,
+            isActive: true,
+            type: plan.type || "SME",
+            description: plan.description || "",
+          };
+        });
 
         console.log(`[DataService] Fetched ${transformedPlans.length} live plans for ${network.name}`);
         return { success: true, data: transformedPlans, source: "live" };
@@ -148,6 +155,7 @@ export async function purchaseData(
     networkId: dataPlan.networkId._id,
     phoneNumber,
     amount,
+    nominalAmount: dataPlan.nominalAmount || amount,
     platformCommission: commission,
     agentProfit,
     status: TRANSACTION_STATUS.PENDING,
@@ -178,7 +186,7 @@ export async function purchaseData(
     phoneNumber,
     reference,
     dataPlan.networkId.providerCode,
-    dataPlan.price,
+    dataPlan.nominalAmount || dataPlan.price,
     dataPlan.type,
   );
 

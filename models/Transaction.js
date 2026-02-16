@@ -43,6 +43,10 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    nominalAmount: {
+      type: Number,
+      default: null,
+    },
     platformCommission: {
       type: Number,
       required: true,

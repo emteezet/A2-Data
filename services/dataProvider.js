@@ -59,12 +59,18 @@ class DataProvider {
    */
 
   // Map network codes (providerCode from our DB) to MobileNig service_id
-  getAirtimeServiceId(networkCode) {
+  // Map network codes (providerCode from our DB) to MobileNig service_id
+  getAirtimeServiceId(networkCode, serviceType = "PREMIUM") {
+    // Special handling for MTN AWUF
+    if (String(networkCode) === "1" && serviceType === "AWUF") {
+      return "BAD";
+    }
+
     const map = {
-      "1": "ABA", // MTN
+      "1": "ABA", // MTN (Premium/Standard)
       "2": "ABC", // Airtel
       "3": "ABB", // Glo
-      "4": "ABD", // 9mobile
+      "4": "ABD", // 9mobile (Standard)
     };
     return map[String(networkCode)] || null;
   }
@@ -136,31 +142,33 @@ class DataProvider {
   }
 
   /**
-   * Fetch live data plan prices from MobileNig.
-   * GET /control/services_prices?service_id=BCA&service_type=SME
+   * Fetch live data plan packages from MobileNig.
+   * POST /services/packages
    * Uses PUBLIC KEY.
-   * Returns array of plans with amount, validity, dataSize etc.
+   * Returns array of plans with price, productCode, name etc.
    */
   async getDataPlans(serviceId, serviceType = "SME") {
     try {
-      const response = await this.client.get("/control/services_prices", {
-        params: { service_id: serviceId, service_type: serviceType },
+      const response = await this.client.post("/services/packages", {
+        service_id: serviceId,
+        requestType: serviceType
+      }, {
         headers: { "Authorization": `Bearer ${this.publicKey}` },
         timeout: 15000,
       });
 
       const data = response.data;
 
-      // MobileNig returns plans in data.details or data directly
-      const plans = data?.details || data?.data || data?.plans || [];
+      // MobileNig returns packages in data.details
+      const plans = data?.details || [];
 
       return {
-        success: true,
+        success: data.message === "success" || data.statusCode === "200",
         plans: Array.isArray(plans) ? plans : [],
         raw: data,
       };
     } catch (error) {
-      console.error("MobileNig Data Plans Error:", error.response?.data || error.message);
+      console.error("MobileNig Data Packages Error:", error.response?.data || error.message);
       return {
         success: false,
         error: error.response?.data?.message || error.message,
@@ -206,9 +214,9 @@ class DataProvider {
     };
   }
 
-  async buyAirtime(networkCode, phoneNumber, amount, transId) {
+  async buyAirtime(networkCode, phoneNumber, amount, transId, serviceType = "PREMIUM") {
     try {
-      const serviceId = this.getAirtimeServiceId(networkCode);
+      const serviceId = this.getAirtimeServiceId(networkCode, serviceType);
       if (!serviceId) {
         return {
           success: false,
@@ -217,12 +225,17 @@ class DataProvider {
         };
       }
 
-      console.log(`[DataProvider] buyAirtime: serviceId=${serviceId}, phone=${phoneNumber}, amount=${amount}, transId=${transId}`);
+      console.log(`[DataProvider] buyAirtime: serviceId=${serviceId}, serviceType=${serviceType}, phone=${phoneNumber}, amount=${amount}, transId=${transId}`);
+
+      // MobileNig Inconsistency: Newer services (BAD, BAC) use service_type. 
+      // Older standard services (ABA, ABC, ABB, ABD) use requestType.
+      const isNewService = ["BAD", "BAC"].includes(serviceId);
+      const typeParam = isNewService ? { service_type: serviceType } : { requestType: serviceType };
 
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        requestType: "PREMIUM",
+        ...typeParam,
         phoneNumber: this.formatPhoneNumber(phoneNumber),
         amount: amount,
         trans_id: this.formatTransId(transId),
@@ -306,11 +319,11 @@ class DataProvider {
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        requestType: serviceType || "SME", // Changed from service_type to requestType
+        service_type: serviceType || "SME",
         beneficiary: this.formatPhoneNumber(phoneNumber),
         trans_id: this.formatTransId(transId),
-        code: dataPlanCode, // Plan identifier required by MobileNig
-        amount: String(numericAmount), // Ensure amount is sent as string to avoid type mismatch
+        code: dataPlanCode, // productCode from packages call
+        amount: String(numericAmount), // price from packages call
       }, {
         headers: { "Authorization": `Bearer ${this.secretKey}` }
       });
@@ -385,7 +398,7 @@ class DataProvider {
           transaction.phoneNumber,
           transaction.reference,
           transaction.networkId.providerCode,
-          transaction.amount,
+          transaction.nominalAmount || transaction.amount,
           transaction.dataPlanId.type || "SME"
         );
       } else {

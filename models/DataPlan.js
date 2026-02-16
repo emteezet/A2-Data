@@ -20,6 +20,10 @@ const dataPlanSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    nominalAmount: {
+      type: Number,
+      default: null,
+    },
     validity: {
       type: String,
       required: true,

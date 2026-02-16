@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import LoadingUI from "@/components/LoadingUI";
+import CountUp from "@/components/CountUp";
 
 const networkLogos = {
   "MTN": "/mtn-logo.svg",
@@ -35,12 +36,9 @@ export default function TransactionsPage() {
   const fetchWallet = async (token) => {
     try {
       const res = await fetch("/api/wallet", {
-        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ action: "balance" }),
       });
       const data = await res.json();
       if (data.success) {
@@ -88,27 +86,6 @@ export default function TransactionsPage() {
 
   const filteredTransactions = getFilteredTransactions();
 
-  const getTotalSpent = () => {
-    return transactions.reduce((sum, tx) => {
-      if (
-        tx.status === "success" ||
-        tx.status === "successful" ||
-        tx.status === "completed"
-      ) {
-        if (
-          tx.type === "data" ||
-          tx.type === "airtime" ||
-          tx.type === "data_purchase" ||
-          tx.type === "airtime_purchase" ||
-          (tx.type === "purchase" && tx.status !== "refunded")
-        ) {
-          return sum + (tx.amount || 0);
-        }
-      }
-      return sum;
-    }, 0);
-  };
-
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "success":
@@ -147,7 +124,7 @@ export default function TransactionsPage() {
             Wallet Balance
           </h3>
           <p className="text-3xl font-black text-gray-900">
-            ₦{wallet?.balance?.toLocaleString() || "0"}
+            ₦<CountUp end={wallet?.balance || 0} />
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-emerald-500">
@@ -155,7 +132,7 @@ export default function TransactionsPage() {
             Total Spent
           </h3>
           <p className="text-3xl font-black text-emerald-600">
-            ₦{wallet?.totalSpent?.toLocaleString() || "0"}
+            ₦<CountUp end={wallet?.totalSpent || 0} />
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
@@ -163,7 +140,7 @@ export default function TransactionsPage() {
             Total Transactions
           </h3>
           <p className="text-3xl font-black text-purple-600">
-            {transactions.length}
+            <CountUp end={transactions.length} />
           </p>
         </div>
       </div>

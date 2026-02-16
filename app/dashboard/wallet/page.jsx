@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import LoadingUI from "@/components/LoadingUI";
+import CountUp from "@/components/CountUp";
 
 const networkLogos = {
   "MTN": "/mtn-logo.svg",
@@ -140,19 +141,19 @@ export default function WalletSummaryPage() {
           Available Balance
         </h2>
         <p className="text-5xl font-bold mb-6">
-          ₦{wallet.balance.toLocaleString()}
+          ₦<CountUp end={wallet.balance || 0} />
         </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
             <p className="text-sm opacity-90">Total Funded</p>
             <p className="text-2xl font-bold">
-              ₦{wallet.totalFunded?.toLocaleString() || "0"}
+              ₦<CountUp end={wallet.totalFunded || 0} />
             </p>
           </div>
           <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
             <p className="text-sm opacity-90">Total Spent</p>
             <p className="text-2xl font-bold">
-              ₦{wallet.totalSpent?.toLocaleString() || "0"}
+              ₦<CountUp end={wallet.totalSpent || 0} />
             </p>
           </div>
         </div>
@@ -165,7 +166,7 @@ export default function WalletSummaryPage() {
             <div>
               <p className="text-gray-600 text-sm">Total Transactions</p>
               <p className="text-3xl font-bold text-gray-900">
-                {transactions.length}
+                <CountUp end={transactions.length} />
               </p>
             </div>
             <div className="text-4xl">📊</div>
@@ -177,7 +178,7 @@ export default function WalletSummaryPage() {
             <div>
               <p className="text-gray-600 text-sm">Amount Funded</p>
               <p className="text-3xl font-bold text-emerald-600">
-                ₦{wallet.totalFunded?.toLocaleString() || "0"}
+                ₦<CountUp end={wallet.totalFunded || 0} />
               </p>
             </div>
             <div className="text-4xl">💳</div>
@@ -189,7 +190,7 @@ export default function WalletSummaryPage() {
             <div>
               <p className="text-gray-600 text-sm">Amount Spent</p>
               <p className="text-3xl font-bold text-rose-600">
-                ₦{wallet.totalSpent?.toLocaleString() || "0"}
+                ₦<CountUp end={wallet.totalSpent || 0} />
               </p>
             </div>
             <div className="text-4xl">💸</div>
@@ -279,12 +280,12 @@ export default function WalletSummaryPage() {
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-semibold ${tx.status?.toLowerCase() === "success" || tx.status?.toLowerCase() === "successful" || tx.status?.toLowerCase() === "delivered"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
-                                ? "bg-amber-100 text-amber-800"
-                                : tx.status?.toLowerCase() === "refunded"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-rose-100 text-rose-800"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
+                              ? "bg-amber-100 text-amber-800"
+                              : tx.status?.toLowerCase() === "refunded"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-rose-100 text-rose-800"
                             }`}
                         >
                           {tx.status}

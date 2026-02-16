@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import LoadingUI from "@/components/LoadingUI";
+import CountUp from "@/components/CountUp";
 
 
 export default function FundWalletPage() {
@@ -105,10 +106,10 @@ export default function FundWalletPage() {
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 mb-6">
           <h2 className="text-base font-semibold mb-1 opacity-90">Current Balance</h2>
           <p className="text-3xl sm:text-4xl font-bold">
-            ₦{wallet.balance.toLocaleString()}
+            ₦<CountUp end={wallet.balance || 0} />
           </p>
           <p className="text-blue-100 text-sm mt-1">
-            Total Funded: ₦{wallet.totalFunded.toLocaleString()}
+            Total Funded: ₦<CountUp end={wallet.totalFunded || 0} />
           </p>
         </div>
       )}
@@ -200,10 +201,10 @@ export default function FundWalletPage() {
                     <td className="py-3 px-4">
                       <span
                         className={`px-2 py-1 rounded text-sm font-semibold ${tx.status?.toLowerCase() === "successful" || tx.status?.toLowerCase() === "success"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-rose-100 text-rose-800"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-rose-100 text-rose-800"
                           }`}
                       >
                         {tx.status}

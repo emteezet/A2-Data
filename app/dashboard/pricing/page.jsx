@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import CountUp from "@/components/CountUp";
 
 
 const networkLogos = {
@@ -184,7 +185,7 @@ export default function PricingPage() {
 
                       <div className="bg-gray-50 rounded-lg p-4 mb-4">
                         <p className="text-3xl font-bold text-blue-600">
-                          ₦{plan.price.toLocaleString()}
+                          ₦<CountUp end={plan.price || 0} />
                         </p>
                       </div>
 

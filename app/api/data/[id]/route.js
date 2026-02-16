@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import dbConnect from "@/lib/mongodb";
 import { getNetworkPlans } from "@/services/dataService";
 import { successResponse, errorResponse } from "@/lib/response";

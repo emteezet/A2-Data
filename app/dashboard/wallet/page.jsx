@@ -105,23 +105,32 @@ export default function WalletSummaryPage() {
     }
   };
 
-  const calculateStats = () => {
-    const spent = transactions
-      .filter((tx) => tx.type === "data" || tx.type === "airtime")
-      .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const getTransactionLabel = (tx) => {
+    if (tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId) {
+      return `${tx.network || tx.networkId?.name || "Network"} Data`;
+    }
+    if (tx.type === "airtime" || tx.type === "airtime_purchase") {
+      return `${tx.network || tx.networkId?.name || "Network"} Airtime`;
+    }
+    if (tx.type === "funding" || tx.type === "wallet_funding") {
+      return "Wallet Funding";
+    }
+    if (tx.type === "purchase") {
+      return tx.dataPlanId ? `${tx.network || "Network"} Data` : `${tx.network || "Network"} Airtime`;
+    }
+    return tx.description || "Transaction";
+  };
 
-    const funded = transactions
-      .filter((tx) => tx.type === "funding")
-      .reduce((sum, tx) => sum + (tx.amount || 0), 0);
-
-    return { spent, funded };
+  const getTransactionIcon = (tx) => {
+    if (tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId) return "📊";
+    if (tx.type === "airtime" || tx.type === "airtime_purchase") return "📱";
+    if (tx.type === "funding" || tx.type === "wallet_funding") return "💳";
+    return "💸";
   };
 
   if (pageLoading || !user || !wallet) {
     return <LoadingUI message="Preparing your wallet..." />;
   }
-
-  const stats = calculateStats();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -137,13 +146,13 @@ export default function WalletSummaryPage() {
           <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
             <p className="text-sm opacity-90">Total Funded</p>
             <p className="text-2xl font-bold">
-              ₦{wallet.totalFunded.toLocaleString()}
+              ₦{wallet.totalFunded?.toLocaleString() || "0"}
             </p>
           </div>
           <div className="bg-blue-700 bg-opacity-50 rounded-lg p-4">
             <p className="text-sm opacity-90">Total Spent</p>
             <p className="text-2xl font-bold">
-              ₦{stats.spent.toLocaleString()}
+              ₦{wallet.totalSpent?.toLocaleString() || "0"}
             </p>
           </div>
         </div>
@@ -163,24 +172,24 @@ export default function WalletSummaryPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-emerald-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Amount Funded</p>
-              <p className="text-3xl font-bold text-green-600">
-                ₦{stats.funded.toLocaleString()}
+              <p className="text-3xl font-bold text-emerald-600">
+                ₦{wallet.totalFunded?.toLocaleString() || "0"}
               </p>
             </div>
             <div className="text-4xl">💳</div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-rose-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Amount Spent</p>
-              <p className="text-3xl font-bold text-red-600">
-                ₦{stats.spent.toLocaleString()}
+              <p className="text-3xl font-bold text-rose-600">
+                ₦{wallet.totalSpent?.toLocaleString() || "0"}
               </p>
             </div>
             <div className="text-4xl">💸</div>
@@ -234,13 +243,13 @@ export default function WalletSummaryPage() {
                               </div>
                             ) : (
                               <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-lg text-sm">
-                                {tx.type === "funding" ? "💳" : "💸"}
+                                {getTransactionIcon(tx)}
                               </div>
                             );
                           })()}
                           <div>
                             <div className="font-bold text-gray-900 leading-tight">
-                              {tx.description || "Transaction"}
+                              {getTransactionLabel(tx)}
                             </div>
                             {tx.reference && (
                               <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
@@ -269,11 +278,13 @@ export default function WalletSummaryPage() {
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-semibold ${tx.status === "successful"
-                            ? "bg-green-100 text-green-800"
-                            : tx.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${tx.status?.toLowerCase() === "success" || tx.status?.toLowerCase() === "successful" || tx.status?.toLowerCase() === "delivered"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
+                                ? "bg-amber-100 text-amber-800"
+                                : tx.status?.toLowerCase() === "refunded"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-rose-100 text-rose-800"
                             }`}
                         >
                           {tx.status}

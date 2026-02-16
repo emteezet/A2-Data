@@ -47,7 +47,7 @@ export default function FundWalletPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ action: "history", limit: 10 }),
+        body: JSON.stringify({ action: "history", limit: 10, type: "wallet_funding" }),
       });
       const data = await res.json();
       if (data.success) {
@@ -199,11 +199,11 @@ export default function FundWalletPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`px-2 py-1 rounded text-sm font-semibold ${tx.status === "successful"
-                          ? "bg-green-100 text-green-800"
-                          : tx.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                        className={`px-2 py-1 rounded text-sm font-semibold ${tx.status?.toLowerCase() === "successful" || tx.status?.toLowerCase() === "success"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : tx.status?.toLowerCase() === "pending" || tx.status?.toLowerCase() === "processing"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-rose-100 text-rose-800"
                           }`}
                       >
                         {tx.status}

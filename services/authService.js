@@ -152,4 +152,4 @@ function validateInput(email, phone, password, name) {
   }
 
   return { success: true };
-}
+};

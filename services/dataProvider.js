@@ -66,6 +66,11 @@ class DataProvider {
       return "BAD";
     }
 
+    // Special handling for 9mobile Premium
+    if (String(networkCode) === "4" && serviceType === "PREMIUM") {
+      return "BAC";
+    }
+
     const map = {
       "1": "ABA", // MTN (Premium/Standard)
       "2": "ABC", // Airtel
@@ -227,10 +232,8 @@ class DataProvider {
 
       console.log(`[DataProvider] buyAirtime: serviceId=${serviceId}, serviceType=${serviceType}, phone=${phoneNumber}, amount=${amount}, transId=${transId}`);
 
-      // MobileNig Inconsistency: Newer services (BAD, BAC) use service_type. 
-      // Older standard services (ABA, ABC, ABB, ABD) use requestType.
-      const isNewService = ["BAD", "BAC"].includes(serviceId);
-      const typeParam = isNewService ? { service_type: serviceType } : { requestType: serviceType };
+      // MobileNig Airtime uses requestType for all networks (confirmed by manual tests)
+      const typeParam = { requestType: serviceType };
 
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {

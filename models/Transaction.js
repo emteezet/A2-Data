@@ -35,7 +35,7 @@ const transactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["purchase", "funding"],
+      enum: ["purchase", "funding", "airtime_purchase", "data_purchase", "wallet_funding"],
       default: "purchase",
     },
     amount: {

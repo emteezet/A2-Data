@@ -15,6 +15,9 @@ export const TRANSACTION_STATUS = {
 export const TRANSACTION_TYPE = {
   PURCHASE: "purchase",
   FUNDING: "funding",
+  AIRTIME_PURCHASE: "airtime_purchase",
+  DATA_PURCHASE: "data_purchase",
+  WALLET_FUNDING: "wallet_funding",
 };
 
 export const PROVIDER_STATUS = {

@@ -14,6 +14,7 @@ const networkLogos = {
 export default function TransactionsPage() {
   const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
@@ -28,7 +29,27 @@ export default function TransactionsPage() {
 
     setUser(JSON.parse(userData));
     fetchTransactions(token);
+    fetchWallet(token);
   }, []);
+
+  const fetchWallet = async (token) => {
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: "balance" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWallet(data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching wallet:", err);
+    }
+  };
 
   const fetchTransactions = async (token) => {
     try {
@@ -53,6 +74,15 @@ export default function TransactionsPage() {
 
   const getFilteredTransactions = () => {
     if (filter === "all") return transactions;
+    if (filter === "data") {
+      return transactions.filter((tx) => tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId);
+    }
+    if (filter === "airtime") {
+      return transactions.filter((tx) => tx.type === "airtime" || tx.type === "airtime_purchase" || (tx.type === "purchase" && !tx.dataPlanId));
+    }
+    if (filter === "funding") {
+      return transactions.filter((tx) => tx.type === "funding" || tx.type === "wallet_funding");
+    }
     return transactions.filter((tx) => tx.type === filter);
   };
 
@@ -60,8 +90,20 @@ export default function TransactionsPage() {
 
   const getTotalSpent = () => {
     return transactions.reduce((sum, tx) => {
-      if (tx.type === "data" || tx.type === "airtime") {
-        return sum + (tx.amount || 0);
+      if (
+        tx.status === "success" ||
+        tx.status === "successful" ||
+        tx.status === "completed"
+      ) {
+        if (
+          tx.type === "data" ||
+          tx.type === "airtime" ||
+          tx.type === "data_purchase" ||
+          tx.type === "airtime_purchase" ||
+          (tx.type === "purchase" && tx.status !== "refunded")
+        ) {
+          return sum + (tx.amount || 0);
+        }
       }
       return sum;
     }, 0);
@@ -69,29 +111,27 @@ export default function TransactionsPage() {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case "success":
       case "successful":
       case "completed":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 border-green-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+      case "processing":
+        return "bg-amber-100 text-amber-800 border-amber-200";
       case "failed":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 border-red-200";
+      case "refunded":
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case "data":
-        return "📊";
-      case "airtime":
-        return "📱";
-      case "funding":
-        return "💳";
-      default:
-        return "📋";
-    }
+  const getTypeIcon = (type, tx = {}) => {
+    if (type === "data" || type === "data_purchase" || tx.dataPlanId) return "📊";
+    if (type === "airtime" || type === "airtime_purchase") return "📱";
+    if (type === "funding" || type === "wallet_funding") return "💳";
+    return "📋";
   };
 
   if (!user) return <LoadingUI message="Retrieving transaction history..." />;
@@ -100,30 +140,28 @@ export default function TransactionsPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-600 text-sm font-semibold">
-            Total Transactions
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600">
+          <h3 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+            Wallet Balance
           </h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {transactions.length}
+          <p className="text-3xl font-black text-gray-900">
+            ₦{wallet?.balance?.toLocaleString() || "0"}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-600 text-sm font-semibold">
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-emerald-500">
+          <h3 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
             Total Spent
           </h3>
-          <p className="text-3xl font-bold text-green-600">
-            ₦{getTotalSpent().toLocaleString()}
+          <p className="text-3xl font-black text-emerald-600">
+            ₦{wallet?.totalSpent?.toLocaleString() || "0"}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-600 text-sm font-semibold">
-            Recent Activity
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <h3 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+            Total Transactions
           </h3>
-          <p className="text-3xl font-bold text-purple-600">
-            {transactions.length > 0
-              ? new Date(transactions[0]?.createdAt).toLocaleDateString()
-              : "N/A"}
+          <p className="text-3xl font-black text-purple-600">
+            {transactions.length}
           </p>
         </div>
       </div>
@@ -191,17 +229,21 @@ export default function TransactionsPage() {
                               </div>
                             ) : (
                               <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-lg text-sm">
-                                {getTypeIcon(tx.type)}
+                                {getTypeIcon(tx.type, tx)}
                               </div>
                             );
                           })()}
                           <div>
                             <div className="font-bold text-gray-900 leading-tight">
-                              {tx.type === "data"
-                                ? `${tx.network} - ${tx.dataSize}`
-                                : tx.type === "airtime"
-                                  ? `${tx.network} Airtime`
-                                  : "Wallet Funding"}
+                              {tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId
+                                ? `${tx.network || tx.networkId?.name || "Network"} - ${tx.dataSize || tx.dataPlanId?.dataSize || "Data"}`
+                                : tx.type === "airtime" || tx.type === "airtime_purchase"
+                                  ? `${tx.network || tx.networkId?.name || "Network"} Airtime`
+                                  : tx.type === "funding" || tx.type === "wallet_funding"
+                                    ? "Wallet Funding"
+                                    : tx.type === "purchase"
+                                      ? (tx.dataPlanId ? `${tx.network || "Network"} Data` : `${tx.network || "Network"} Airtime`)
+                                      : "Transaction"}
                             </div>
                             <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
                               {tx.phoneNumber || tx.reference || "Transaction"}

@@ -159,6 +159,7 @@ export async function purchaseData(
     platformCommission: commission,
     agentProfit,
     status: TRANSACTION_STATUS.PENDING,
+    type: TRANSACTION_TYPE.DATA_PURCHASE,
     paymentMethod,
     metadata: {
       dataSizeGB: dataPlan.dataSize,
@@ -277,6 +278,7 @@ export async function purchaseAirtime(
     platformCommission: commission,
     agentProfit,
     status: TRANSACTION_STATUS.PENDING,
+    type: TRANSACTION_TYPE.AIRTIME_PURCHASE,
     paymentMethod,
   });
 

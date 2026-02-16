@@ -14,7 +14,7 @@ export async function getWalletBalance(userId) {
   return { success: true, data: wallet };
 }
 
-export async function fundWallet(userId, amount, paystackReference = null) {
+export async function fundWallet(userId, amount, paystackReference = null, isRefund = false) {
   if (amount <= 0) {
     return { error: "Amount must be greater than 0", statusCode: 400 };
   }
@@ -25,11 +25,13 @@ export async function fundWallet(userId, amount, paystackReference = null) {
   }
 
   wallet.balance += amount;
-  wallet.totalFunded += amount;
+  if (isRefund) {
+    wallet.totalSpent = Math.max(0, wallet.totalSpent - amount);
+  } else {
+    wallet.totalFunded += amount;
+  }
   wallet.lastFundedAt = new Date();
 
-  // If paystackReference is provided, we should ensure it's not already processed
-  // This is a secondary check as the primary check should be in the webhook handler
   await wallet.save();
 
   return {
@@ -37,6 +39,7 @@ export async function fundWallet(userId, amount, paystackReference = null) {
     data: {
       newBalance: wallet.balance,
       totalFunded: wallet.totalFunded,
+      totalSpent: wallet.totalSpent,
     },
   };
 }
@@ -66,18 +69,32 @@ export async function deductWalletBalance(userId, amount, reason = "purchase") {
 }
 
 export async function refundWallet(userId, amount, reason = "refund") {
-  return fundWallet(userId, amount);
+  return fundWallet(userId, amount, null, true);
 }
 
-export async function getWalletTransactions(userId, limit = 50, skip = 0) {
-  const transactions = await Transaction.find({ userId })
+export async function getWalletTransactions(userId, limit = 50, skip = 0, type = null) {
+  const query = { userId };
+  if (type) {
+    // Handle both new specific types and old generic types if necessary
+    if (type === "data_purchase") {
+      query.$or = [{ type: "data_purchase" }, { type: "data" }, { dataPlanId: { $ne: null } }];
+    } else if (type === "airtime_purchase") {
+      query.$or = [{ type: "airtime_purchase" }, { type: "airtime" }, { type: "purchase", dataPlanId: null }];
+    } else if (type === "wallet_funding") {
+      query.$or = [{ type: "wallet_funding" }, { type: "funding" }];
+    } else {
+      query.type = type;
+    }
+  }
+
+  const transactions = await Transaction.find(query)
     .sort({ createdAt: -1 })
     .limit(limit)
     .skip(skip)
     .populate("dataPlanId", "name dataSize")
     .populate("networkId", "name");
 
-  const total = await Transaction.countDocuments({ userId });
+  const total = await Transaction.countDocuments(query);
 
   return {
     success: true,
@@ -96,6 +113,7 @@ export async function processWalletPayment(
   dataPlanId,
   networkId,
   phoneNumber,
+  type = TRANSACTION_TYPE.DATA_PURCHASE // Default to data
 ) {
   const walletResult = await deductWalletBalance(userId, amount);
 
@@ -112,6 +130,7 @@ export async function processWalletPayment(
     networkId,
     phoneNumber,
     amount,
+    type,
     platformCommission: 0,
     agentProfit: 0,
     status: TRANSACTION_STATUS.PENDING,

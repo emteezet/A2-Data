@@ -96,7 +96,50 @@ export default function DashboardHub() {
 
   if (!user) return <LoadingUI message="Preparing your dashboard..." />;
 
-  const successfulTransactions = transactions.filter(t => t.status === 'success');
+  const successfulTransactions = transactions.filter(t =>
+    t.status === 'success' ||
+    t.status === 'successful' ||
+    t.status === 'completed'
+  );
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "success":
+      case "successful":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-amber-100 text-amber-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      case "refunded":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getTransactionLabel = (tx) => {
+    if (tx.type === "data" || tx.type === "data_purchase" || tx.dataPlanId) {
+      return `${tx.network || tx.networkId?.name || "Network"} Data`;
+    }
+    if (tx.type === "airtime" || tx.type === "airtime_purchase") {
+      return `${tx.network || tx.networkId?.name || "Network"} Airtime`;
+    }
+    if (tx.type === "funding" || tx.type === "wallet_funding") {
+      return "Wallet Funding";
+    }
+    // Deep fallback legacy check
+    if (tx.type === "purchase") {
+      return tx.dataPlanId ? `${tx.network || "Network"} Data` : `${tx.network || "Network"} Airtime`;
+    }
+    return "Transaction";
+  };
+
+  const getTransactionIcon = (type, tx = {}) => {
+    if (type === "data" || type === "data_purchase" || tx.dataPlanId) return "📊";
+    if (type === "airtime" || type === "airtime_purchase") return "📱";
+    return "💳";
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
@@ -178,6 +221,45 @@ export default function DashboardHub() {
               </div>
             </div>
           </Link>
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Recent Transactions</h3>
+          <Link href="/dashboard/transactions" className="text-blue-600 font-semibold hover:underline">View All</Link>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {transactions.length > 0 ? (
+            <div className="divide-y divide-gray-50">
+              {transactions.slice(0, 5).map((tx) => (
+                <div key={tx._id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-xl text-2xl">
+                        {getTransactionIcon(tx.type, tx)}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">{getTransactionLabel(tx)}</h4>
+                        <p className="text-sm text-gray-500">{new Date(tx.createdAt).toLocaleDateString()} • {tx.phoneNumber || tx.reference}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">₦{tx.amount?.toLocaleString()}</p>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>
+                        {tx.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 text-center text-gray-500">
+              No transactions yet.
+            </div>
+          )}
         </div>
       </div>
 

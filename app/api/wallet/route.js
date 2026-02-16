@@ -79,8 +79,8 @@ export async function POST(request) {
     }
 
     if (action === "history") {
-      const { limit = 50, skip = 0 } = body;
-      const result = await getWalletTransactions(user.userId, limit, skip);
+      const { limit = 50, skip = 0, type = null } = body;
+      const result = await getWalletTransactions(user.userId, limit, skip, type);
 
       if (result.error) {
         return Response.json(errorResponse(result.error, result.statusCode), {

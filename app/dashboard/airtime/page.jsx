@@ -27,6 +27,7 @@ export default function AirtimePage() {
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState([]);
   const [step, setStep] = useState("select-network");
   const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: "", message: "" });
@@ -43,7 +44,27 @@ export default function AirtimePage() {
     setUser(JSON.parse(userData));
     fetchWallet(token);
     fetchNetworks(token);
+    fetchTransactions(token);
   }, []);
+
+  const fetchTransactions = async (token) => {
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: "history", limit: 10, type: "airtime_purchase" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTransactions(data.data.transactions || []);
+      }
+    } catch (err) {
+      console.error("Error fetching transactions:", err.message);
+    }
+  };
 
   const fetchWallet = async (token) => {
     try {
@@ -206,6 +227,7 @@ export default function AirtimePage() {
         setCustomAmount("");
         setSelectedNetwork(null);
         fetchWallet(token);
+        fetchTransactions(token);
         setSuccessModal({
           isOpen: true,
           title: "Purchase Successful",
@@ -234,16 +256,17 @@ export default function AirtimePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8 space-y-8">
-      {/* Wallet Balance */}
-      {wallet && (
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
+      {/* Account Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Balance Card */}
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden group">
           <div className="relative z-10">
             <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">
-              Available Balance
+              Balance
             </p>
             <div className="flex items-baseline justify-between">
-              <p className="text-4xl font-black">
-                ₦<CountUp end={wallet.balance} />
+              <p className="text-3xl font-black">
+                ₦<CountUp end={wallet?.balance || 0} />
               </p>
               <Link
                 href="/dashboard/fund-wallet"
@@ -255,7 +278,27 @@ export default function AirtimePage() {
             </div>
           </div>
         </div>
-      )}
+
+        {/* Airtime Transactions Card */}
+        <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+            Success Purchases
+          </p>
+          <p className="text-3xl font-black text-gray-900">
+            <CountUp end={transactions.filter(t => t.status === 'success' || t.status === 'successful').length} />
+          </p>
+        </div>
+
+        {/* Total Spent Card */}
+        <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+            Total Spent
+          </p>
+          <p className="text-3xl font-black text-blue-600">
+            ₦<CountUp end={wallet?.totalSpent || 0} />
+          </p>
+        </div>
+      </div>
 
       {/* Purchase Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -437,6 +480,56 @@ export default function AirtimePage() {
                   wallet?.balance < finalAmount ? "Insufficient Balance" :
                     `Buy ₦${finalAmount.toLocaleString()} Airtime`}
               </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Airtime Purchases Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-900">Recent Airtime Purchases</h2>
+          <Link href="/dashboard/transactions" className="text-sm font-bold text-blue-600 hover:underline">
+            View All History
+          </Link>
+        </div>
+        <div className="p-6">
+          {transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto text-2xl">
+                📱
+              </div>
+              <p className="text-gray-500 font-medium">No airtime purchases yet</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {transactions.map((tx) => (
+                <div key={tx._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                        📱
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">
+                          {tx.network || tx.networkId?.name || "Airtime"} Purchase
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {tx.phoneNumber} • {new Date(tx.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-gray-900">₦{tx.amount.toLocaleString()}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tx.status === 'success' || tx.status === 'successful' ? 'bg-emerald-100 text-emerald-700' :
+                        tx.status === 'failed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                        {tx.status.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

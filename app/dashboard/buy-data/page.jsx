@@ -93,7 +93,7 @@ function BuyDataContent() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ action: "history", limit: 100 }),
+                body: JSON.stringify({ action: "history", limit: 10, type: "data_purchase" }),
             });
 
             if (!res.ok) {
@@ -313,7 +313,7 @@ function BuyDataContent() {
 
     if (!user) return <LoadingUI message="Loading data plans..." />;
 
-    const dataTransactions = transactions.filter(t => (t.dataPlanId || t.type === 'purchase') && t.status === 'success');
+    const dataTransactions = transactions.filter(t => t.status === 'success' || t.status === 'successful');
 
     const filteredPlans = [...plans].sort((a, b) => a.price - b.price);
 

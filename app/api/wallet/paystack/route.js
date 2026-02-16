@@ -44,7 +44,7 @@ export async function POST(request) {
                 amount: amount,
                 status: TRANSACTION_STATUS.PENDING,
                 paymentMethod: PAYMENT_METHOD.PAYSTACK,
-                type: TRANSACTION_TYPE.FUNDING,
+                type: TRANSACTION_TYPE.WALLET_FUNDING,
                 paystackReference: reference,
                 metadata: { ...metadata, email }
             });

@@ -322,7 +322,7 @@ class DataProvider {
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        service_type: serviceType || "SME",
+        requestType: serviceType || "SME",
         beneficiary: this.formatPhoneNumber(phoneNumber),
         trans_id: this.formatTransId(transId),
         code: dataPlanCode, // productCode from packages call

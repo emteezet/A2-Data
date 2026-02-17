@@ -53,9 +53,14 @@ const dataPlanSchema = new mongoose.Schema(
       { isActive: 1 },
       { price: 1 },
       { networkId: 1, isActive: 1 },
+      { networkId: 1, providerCode: 1 }, // Added for faster lookups
     ],
   },
 );
+
+// Add unique index for upserts
+dataPlanSchema.index({ networkId: 1, providerCode: 1 }, { unique: true });
+
 
 export default mongoose.models.DataPlan ||
   mongoose.model("DataPlan", dataPlanSchema);

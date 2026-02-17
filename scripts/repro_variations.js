@@ -12,7 +12,7 @@ async function testVariant(name, payloadOverrides) {
 
     // Base payload for MTN 1GB SME
     const basePayload = {
-        service_id: "BCA",
+        service_id: "BCD",
         service_type: "SME",
         beneficiary: "08123456789",
         trans_id: "TST" + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100),
@@ -30,7 +30,7 @@ async function testVariant(name, payloadOverrides) {
         const response = await axios.post(`${baseURL}/services/`, payload, {
             headers: { "Authorization": `Bearer ${secretKey}` }
         });
-        console.log("Response:", JSON.stringify(response.data.message || response.data));
+        console.log("Response:", JSON.stringify(response.data, null, 2));
     } catch (error) {
         console.log("Error:", error.response?.data?.message || error.response?.data || error.message);
     }
@@ -54,6 +54,9 @@ async function run() {
 
     // 6. With RequestType instead of Service_Type (Double Check)
     await testVariant("With RequestType", { service_type: undefined, requestType: "SME" });
+
+    // 7. With Both
+    await testVariant("With Both", { service_type: "SME", requestType: "SME" });
 }
 
 run();

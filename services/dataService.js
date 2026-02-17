@@ -42,29 +42,40 @@ export async function getNetworkPlans(networkId) {
       const liveResult = await dataProvider.getLiveDataPlans(network.providerCode);
 
       if (liveResult.success && liveResult.plans.length > 0) {
-        // Transform MobileNig response to match our frontend format
         const networkName = network.name.toUpperCase();
-        const transformedPlans = liveResult.plans.map((plan, index) => {
+
+        // Prepare bulk operations to cache live plans
+        const ops = liveResult.plans.map((plan) => {
           const providerPrice = parseFloat(plan.price || plan.amount || 0);
           const providerProductCode = String(plan.productCode || plan.code || plan.product_code || plan.price || plan.amount);
 
           return {
-            _id: `live_${networkId}_${index}_${providerProductCode}`,
-            networkId: networkId,
-            name: plan.name || `${networkName} ${plan.dataSize || plan.data_size || plan.amount || ""} (${plan.type || "SME"})`,
-            dataSize: plan.dataSize || plan.data_size || plan.size || (plan.name ? plan.name.split(' ')[0] : "DATA"),
-            price: providerPrice,
-            nominalAmount: providerPrice, // For most networks, amount to send is the price. buyData logic handles overrides.
-            validity: plan.validity || plan.duration || plan.valid || "30 days",
-            providerCode: providerProductCode,
-            isActive: true,
-            type: plan.type || "SME",
-            description: plan.description || "",
+            updateOne: {
+              filter: { networkId: network._id, providerCode: providerProductCode },
+              update: {
+                $set: {
+                  name: plan.name || `${networkName} ${plan.dataSize || plan.data_size || plan.amount || ""} (${plan.type || "SME"})`,
+                  dataSize: plan.dataSize || plan.data_size || plan.size || (plan.name ? plan.name.split(' ')[0] : "DATA"),
+                  price: providerPrice,
+                  nominalAmount: providerPrice,
+                  validity: plan.validity || plan.duration || plan.valid || "30 days",
+                  isActive: true,
+                  type: plan.type || "SME",
+                  description: plan.description || "",
+                }
+              },
+              upsert: true
+            }
           };
         });
 
-        console.log(`[DataService] Fetched ${transformedPlans.length} live plans for ${network.name}`);
-        return { success: true, data: transformedPlans, source: "live" };
+        await DataPlan.bulkWrite(ops);
+
+        // Fetch the updated plans from DB to return them with real IDs
+        const updatedPlans = await DataPlan.find({ networkId: network._id, isActive: true }).sort({ price: 1 });
+
+        console.log(`[DataService] Fetched and cached ${updatedPlans.length} live plans for ${network.name}`);
+        return { success: true, data: updatedPlans, source: "live" };
       }
     } catch (liveError) {
       console.warn(`[DataService] Live plan fetch failed for ${network.name}, falling back to DB:`, liveError.message);
@@ -133,7 +144,21 @@ export async function purchaseData(
     }
   }
 
-  const dataPlan = await DataPlan.findById(dataPlanId).populate("networkId");
+  let dataPlan;
+
+  // Check if it's a "live_" prefixed legacy ID or a real MongoDB ObjectId
+  if (mongoose.Types.ObjectId.isValid(dataPlanId)) {
+    dataPlan = await DataPlan.findById(dataPlanId).populate("networkId");
+  } else if (String(dataPlanId).startsWith("live_")) {
+    console.log(`[DataService] Handling legacy live ID: ${dataPlanId}`);
+    // Extract networkId and providerProductCode from live_${networkId}_${index}_${providerProductCode}
+    const parts = dataPlanId.split('_');
+    if (parts.length >= 4) {
+      const networkId = parts[1];
+      const providerCode = parts.slice(3).join('_'); // Product code might contain underscores
+      dataPlan = await DataPlan.findOne({ networkId, providerCode }).populate("networkId");
+    }
+  }
 
   if (!dataPlan) {
     return { error: "Data plan not found", statusCode: 404 };
@@ -151,7 +176,7 @@ export async function purchaseData(
     reference,
     idempotencyKey,
     userId,
-    dataPlanId,
+    dataPlanId: dataPlan._id,
     networkId: dataPlan.networkId._id,
     phoneNumber,
     amount,

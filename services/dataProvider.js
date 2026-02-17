@@ -95,7 +95,7 @@ class DataProvider {
     if (!transId) return Date.now().toString();
     // Use last 15 chars if too long, or just the ID if short enough
     // Ideally we want unique, so maybe last 15 digits of timestamp/random
-    return String(transId).slice(0, 15);
+    return String(transId).slice(-15);
   }
 
   async checkBalance() {
@@ -127,7 +127,7 @@ class DataProvider {
   async getServiceStatus(serviceId, requestType = "SME") {
     try {
       const response = await this.client.get("/control/services_status", {
-        params: { service_id: serviceId, requestType },
+        params: { service_id: serviceId, service_type: requestType, requestType },
         headers: { "Authorization": `Bearer ${this.publicKey}` },
         timeout: 15000,
       });
@@ -156,6 +156,7 @@ class DataProvider {
     try {
       const response = await this.client.post("/services/packages", {
         service_id: serviceId,
+        service_type: serviceType,
         requestType: serviceType
       }, {
         headers: { "Authorization": `Bearer ${this.publicKey}` },
@@ -233,7 +234,7 @@ class DataProvider {
       console.log(`[DataProvider] buyAirtime: serviceId=${serviceId}, serviceType=${serviceType}, phone=${phoneNumber}, amount=${amount}, transId=${transId}`);
 
       // MobileNig Airtime uses requestType for all networks (confirmed by manual tests)
-      const typeParam = { requestType: serviceType };
+      const typeParam = { service_type: serviceType, requestType: serviceType };
 
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
@@ -322,7 +323,8 @@ class DataProvider {
       // Transactions require SECRET KEY and Trailing Slash on /services/
       const response = await this.client.post("/services/", {
         service_id: serviceId,
-        requestType: serviceType || "SME",
+        service_type: serviceType || "SME",
+        requestType: serviceType || "SME", // Backup for some legacy endpoints
         beneficiary: this.formatPhoneNumber(phoneNumber),
         trans_id: this.formatTransId(transId),
         code: dataPlanCode, // productCode from packages call

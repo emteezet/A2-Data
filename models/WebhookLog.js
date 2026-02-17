@@ -8,7 +8,7 @@ const webhookLogSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ["paystack", "provider"],
+      enum: ["paystack", "vtpass", "mobilenig", "provider"],
       required: true,
     },
     reference: {

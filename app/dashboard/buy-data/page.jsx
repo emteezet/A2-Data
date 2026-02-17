@@ -166,6 +166,7 @@ function BuyDataContent() {
         try {
             const res = await fetch(`/api/data/${networkId}`, {
                 headers: { Authorization: `Bearer ${token}` },
+                cache: 'no-store',
             });
 
             if (!res.ok) {

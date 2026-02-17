@@ -4,7 +4,7 @@ import Network from "@/models/Network";
 import Transaction from "@/models/Transaction";
 import CommissionLog from "@/models/CommissionLog";
 import { generateReference, calculateCommission } from "@/lib/helpers";
-import { TRANSACTION_STATUS, PAYMENT_METHOD, DEFAULT_PLATFORM_COMMISSION } from "@/config/constants";
+import { TRANSACTION_STATUS, TRANSACTION_TYPE, PAYMENT_METHOD, DEFAULT_PLATFORM_COMMISSION } from "@/config/constants";
 import { dataProvider } from "./dataProvider";
 import dbConnect from "@/lib/mongodb";
 

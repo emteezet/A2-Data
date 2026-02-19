@@ -61,33 +61,57 @@ class DataProvider {
   // Map network codes (providerCode from our DB) to MobileNig service_id
   // Map network codes (providerCode from our DB) to MobileNig service_id
   getAirtimeServiceId(networkCode, serviceType = "PREMIUM") {
+    const code = String(networkCode).toLowerCase();
+
     // Special handling for MTN AWUF
-    if (String(networkCode) === "1" && serviceType === "AWUF") {
-      return "BAD";
+    if ((code === "1" || code.includes("mtn")) && serviceType === "AWUF") {
+      return "BAD"; // Keeping as BAD as it was specifically set in previous code
     }
 
-    // Special handling for 9mobile Premium
-    if (String(networkCode) === "4" && serviceType === "PREMIUM") {
-      return "BAC";
-    }
-
+    // Map network codes (providerCode from our DB or numeric ID) to MobileNig service_id
     const map = {
-      "1": "ABA", // MTN (Premium/Standard)
-      "2": "ABC", // Airtel
-      "3": "ABB", // Glo
-      "4": "ABD", // 9mobile (Standard)
+      "1": "ABA",
+      "mtn": "ABA",
+      "mtn-data": "ABA",
+
+      "2": "ABC",
+      "airtel": "ABC",
+      "airtel-data": "ABC",
+
+      "3": "ABB",
+      "glo": "ABB",
+      "glo-data": "ABB",
+
+      "4": "ABD",
+      "9mobile": "ABD",
+      "9mobile-data": "ABD",
+      "etisalat": "ABD",
     };
-    return map[String(networkCode)] || null;
+
+    return map[code] || null;
   }
 
   getDataServiceId(networkCode) {
+    const code = String(networkCode).toLowerCase();
     const map = {
-      "1": "BCA",  // MTN
-      "2": "BCD",  // Airtel
-      "3": "BCC",  // Glo
-      "4": "BCB",  // 9mobile
+      "1": "BCA",
+      "mtn": "BCA",
+      "mtn-data": "BCA",
+
+      "2": "BCD",
+      "airtel": "BCD",
+      "airtel-data": "BCD",
+
+      "3": "BCC",
+      "glo": "BCC",
+      "glo-data": "BCC",
+
+      "4": "BCB",
+      "9mobile": "BCB",
+      "9mobile-data": "BCB",
+      "etisalat": "BCB",
     };
-    return map[String(networkCode)] || null;
+    return map[code] || null;
   }
 
   // Helper to ensure trans_id is <= 15 chars for MobileNig
@@ -240,8 +264,8 @@ class DataProvider {
       const response = await this.client.post("/services/", {
         service_id: serviceId,
         ...typeParam,
-        phoneNumber: this.formatPhoneNumber(phoneNumber),
-        amount: amount,
+        beneficiary: this.formatPhoneNumber(phoneNumber),
+        amount: String(amount),
         trans_id: this.formatTransId(transId),
       }, {
         headers: { "Authorization": `Bearer ${this.secretKey}` }

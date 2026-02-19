@@ -88,25 +88,11 @@ async function seedDatabase() {
     const createdNetworks = await Network.insertMany(networks);
     console.log(`✓ Created ${createdNetworks.length} networks`);
 
-    // Insert data plans
-    let totalPlans = 0;
-    for (const network of createdNetworks) {
-      const plans = dataPlanTemplates[network.code];
-      const plansWithNetworkId = plans.map((plan) => ({
-        ...plan,
-        networkId: network._id,
-      }));
-
-      await DataPlan.insertMany(plansWithNetworkId);
-      totalPlans += plansWithNetworkId.length;
-      console.log(
-        `✓ Created ${plansWithNetworkId.length} plans for ${network.name}`,
-      );
-    }
+    // Seed plans if needed (removed as requested)
+    console.log("Skipping data plan seeding as requested.");
 
     console.log(`\n✅ Database seeded successfully!`);
     console.log(`   - Networks: ${createdNetworks.length}`);
-    console.log(`   - Data Plans: ${totalPlans}`);
 
     process.exit(0);
   } catch (error) {

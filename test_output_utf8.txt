@@ -1,0 +1,158 @@
+﻿[2m[36m[2026-02-19T13:45:35.812Z] [DEBUG] VTPassService initialized for environment: SANDBOX[0m
+[34m[2026-02-19T13:45:35.899Z] [INFO] === VTpass Sandbox Verification ===[0m
+[2m[36m[2026-02-19T13:45:36.730Z] [DEBUG] Generated Request ID: 202602191445167174[0m
+[32m[1m[2026-02-19T13:45:36.731Z] [SUCCESS] Request ID format is valid (numeric prefix, 12+ chars)[0m
+[34m[2026-02-19T13:45:36.731Z] [INFO] Testing Scenario: Successful Purchase | {"phone":"08011111111"}[0m
+[34m[2026-02-19T13:45:36.732Z] [INFO] Initiating Airtime Purchase [202602191445147463] | {"serviceID":"mtn","amount":100,"phone":"08011111111"}[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:38.726Z] [INFO] Testing Scenario: Pending Response | {"phone":"201000000000"}[0m
+[34m[2026-02-19T13:45:38.727Z] [INFO] Initiating Airtime Purchase [202602191445531679] | {"serviceID":"mtn","amount":100,"phone":"201000000000"}[0m
+node : [31m[1m[2026-02-19T13:45:38.725Z] [ERROR] Airtime Purchase HTTP Error [202602191445147463] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+At line:1 char:1
++ node scripts/test_vtpass.js > test_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31m[1m[2026-...DENTIALS"}}[0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:38.726Z] [ERROR] Caught Exception in Successful Purchase[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:39.105Z] [ERROR] Airtime Purchase HTTP Error [202602191445531679] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:39.106Z] [ERROR] Caught Exception in Pending Response[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:39.106Z] [INFO] Testing Scenario: Unexpected Response | {"phone":"500000000000"}[0m
+[34m[2026-02-19T13:45:39.107Z] [INFO] Initiating Airtime Purchase [202602191445452687] | {"serviceID":"mtn","amount":100,"phone":"500000000000"}[0m
+[31m[1m[2026-02-19T13:45:39.453Z] [ERROR] Airtime Purchase HTTP Error [202602191445452687] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:39.453Z] [ERROR] Caught Exception in Unexpected Response[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:39.453Z] [INFO] Testing Scenario: No Response | {"phone":"400000000000"}[0m
+[34m[2026-02-19T13:45:39.454Z] [INFO] Initiating Airtime Purchase [202602191445411251] | {"serviceID":"mtn","amount":100,"phone":"400000000000"}[0m
+[31m[1m[2026-02-19T13:45:39.868Z] [ERROR] Airtime Purchase HTTP Error [202602191445411251] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:39.869Z] [ERROR] Caught Exception in No Response[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:39.869Z] [INFO] Testing Scenario: Timeout (Delay) | {"phone":"300000000000"}[0m
+[34m[2026-02-19T13:45:39.870Z] [INFO] Initiating Airtime Purchase [202602191445139263] | {"serviceID":"mtn","amount":100,"phone":"300000000000"}[0m
+[31m[1m[2026-02-19T13:45:40.273Z] [ERROR] Airtime Purchase HTTP Error [202602191445139263] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:40.273Z] [ERROR] Caught Exception in Timeout (Delay)[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:40.274Z] [INFO] Testing Scenario: Failed Purchase | {"phone":"08123456789"}[0m
+[34m[2026-02-19T13:45:40.274Z] [INFO] Initiating Airtime Purchase [202602191445814756] | {"serviceID":"mtn","amount":100,"phone":"08123456789"}[0m
+[31m[1m[2026-02-19T13:45:40.694Z] [ERROR] Airtime Purchase HTTP Error [202602191445814756] | 
+{"statusCode":401,"responseData":{"code":"087","message":"INVALID CREDENTIALS"}}[0m
+[31mAxiosError: Request failed with status code 401
+    at settle (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/adapters/http.js:798:11)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:74:30)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+[31m[1m[2026-02-19T13:45:40.694Z] [ERROR] Caught Exception in Failed Purchase[0m
+[31mProviderError: Invalid API Credentials for VTpass
+    at VTPassService.handleError (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:205:19)
+    at VTPassService.purchaseAirtime 
+(file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/services/vtpassService.js:85:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (file:///C:/Users/abdul/Music/Web%20apps/A2%20Data/scripts/test_vtpass.js:38:28)[0m
+------------------------------------------------------------
+[34m[2026-02-19T13:45:40.694Z] [INFO] Testing Data Variations Fetch (mtn-data)...[0m
+[2m[36m[2026-02-19T13:45:40.695Z] [DEBUG] Fetching Data Variations for mtn-data[0m
+[32m[1m[2026-02-19T13:45:41.067Z] [SUCCESS] Found 37 variations.[0m
+[34m[2026-02-19T13:45:41.068Z] [INFO] === Verification Complete ===[0m

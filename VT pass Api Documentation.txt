@@ -1,0 +1,3383 @@
+API Key Authentication
+VTpass uses API Keys for authentication, to generate API keys kindly follow the steps below.
+
+Steps on how to generate your api keys:
+To generate your api key for:
+The live environment, go to your VTpass profile here.
+The Sandbox environment, go to to your Sandbox profile here.
+Click on the API Keys tab on your profile page.
+Ensure that API AUTHENTICATION TYPE is set to all or API keys.
+Copy your static API Key and click on the text that says click to generate your public and secret key which will be shown to you just once. So you’ll need to copy it out before leaving that page. If paraventure you didn’t copy the secret or public key, you’ll need to generate a new set of keys.
+ 
+
+How to use your api keys:
+For GET request you’ll need to pass the api-key and public-key through the request header.
+api-key: xxxxxxxxxxxxxxxxxxxx
+public-key: PK_xxxxxxxxxxxxxxxxx
+For POST request you’ll need to pass the api-key and secret-key through the request header.
+api-key: xxxxxxxxxxxxxxxxxxxx 
+secret-key: SK_xxxxxxxxxxxxxxxxx
+
+
+
+How to generate Request ID
+This section contains the recommended format of generating request ID
+
+Request ID Format
+The Request ID should be a string in the unix format YYYYMMDDHHII consisting of today’s date + current hour and minute (e.g: 202201301610) and can be concatenated with any other alphanumeric string as desired (e.g: 202201301610ad8ef08acd8fc0f or 2022013016104738492849).
+
+Note:
+
+MUST BE 12 CHARACTERS OR MORE
+FIRST 12 CHARACTERS MUST BE NUMERIC
+FIRST 12 CHARACTERS MUST COMPRISE OF TODAY’S DATE
+Date and Time should be in Africa/Lagos Timezone or GMT +1
+ 
+
+Example
+    "request_id" => "202202071830YUs83meikd"
+
+
+
+Buying Services through the VTpass API
+This section contains the recommended flow for purchasing a service on VTpass RESTful API.
+
+Authentication
+Learn about authentication from here.
+
+Request ID Format
+The Request ID should be a string in the unix format YYYYMMDDHHII consisting of today’s date + current hour and minute (e.g: 202201301610) and can be concatenated with any other alphanumeric string as desired (e.g: 202201301610ad8ef08acd8fc0f or 2022013016104738492849).
+
+Note:
+
+MUST BE 12 CHARACTERS OR MORE
+FIRST 12 CHARACTERS MUST BE NUMERIC
+FIRST 12 CHARACTERS MUST COMPRISE OF TODAY’S DATE
+Date and Time should be in Africa/Lagos Timezone or GMT +1
+ 
+
+Example
+    "request_id" => "202202071830YUs83meikd"
+ 
+
+How To Buy Airtime
+Get service categories. learn more
+Get Service ID. learn more
+Purchase products.
+a. MTN airtime
+b. GLO airtime
+c. Airtel airtime
+d. 9mobile airtime
+
+MTN VTU API Integration
+This section contains the recommended flow for integrating MTN VTU services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+Available Endpoints
+To integrate the VTpass MTN VTU RESTful API, the endpoints below applies:
+
+Purchase Product
+Query transaction status
+ 
+
+Purchase products
+Using a POST method, MTN VTU services can be purchased with the endpoint below:
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: mtn
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for airtime purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing airtime purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is mtn
+amount	M	Number	The amount you wish to topup
+phone	M	Number	The phone number of the recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "MTN Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": "20",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 0.7000000000000001,
+            "total_amount": 19.3,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "20",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415980564672211596777904",
+            "commission_details": {
+                "amount": 0.7000000000000001,
+                "rate": "3.50",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010146932932",
+    "amount": 20,
+    "transaction_date": "2025-03-10T09:14:16.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "MTN Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": 20,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 1,
+            "total_amount": 19.3,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 20,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415980564672211596777904",
+            "product_id": 2,
+            "commission_details": {
+                "amount": 1,
+                "rate": "3.50",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010146932932",
+    "amount": 20,
+    "transaction_date": "2025-03-10T09:14:16.000000Z",
+    "purchased_code": ""
+}
+
+GLO VTU API Integration
+This section contains the recommended flow for integrating GLO VTU services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+Available Endpoints
+To integrate the VTpass Glo VTU RESTful API, the endpoints below applies:
+
+Purchase Product
+Query transaction status
+ 
+
+Purchase products
+Using a POST method, Glo VTU services can be purchased with the endpoint below:
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: glo
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for airtime purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing airtime purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is glo
+amount	M	Number	The amount you wish to topup
+phone	M	Number	The phone number of the recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "GLO Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": "150",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4.5,
+            "total_amount": 145.5,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "150",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415983929554658494269073",
+            "commission_details": {
+                "amount": 4.5,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010195169937",
+    "amount": 150,
+    "transaction_date": "2025-03-10T09:19:52.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "GLO Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": 150,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 5,
+            "total_amount": 145.5,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 150,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415983929554658494269073",
+            "product_id": 3,
+            "commission_details": {
+                "amount": 5,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010195169937",
+    "amount": 150,
+    "transaction_date": "2025-03-10T09:19:52.000000Z",
+    "purchased_code": ""
+}
+
+Airtel VTU API Integration
+This section contains the recommended flow for integrating Airtel VTU services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+Available Endpoints
+To integrate the VTpass Airtel VTU RESTful API, the endpoints below applies:
+
+Purchase Product
+Query transaction status
+ 
+
+Purchase products
+Using a POST method, Airtel VTU services can be purchased with the endpoint below:
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: airtel
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for airtime purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing airtime purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is airtel
+amount	M	Number	The amount you wish to topup
+phone	M	Number	The phone number of the recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "Airtel Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": "100",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "100",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17416102627511572939185169",
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031013373710241",
+    "amount": 100,
+    "transaction_date": "2025-03-10T12:37:42.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "Airtel Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": 100,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 100,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17416102627511572939185169",
+            "product_id": 1,
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031013373710241",
+    "amount": 100,
+    "transaction_date": "2025-03-10T12:37:42.000000Z",
+    "purchased_code": ""
+}
+
+9mobile VTU API Integration
+This section contains the recommended flow for integrating 9mobile VTU (formally Etisalat) services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+Available Endpoints
+To integrate the VTpass 9mobile VTU RESTful API, the endpoints below applies:
+
+Purchase Product
+Query transaction status
+ 
+
+Purchase products
+Using a POST method, 9mobile VTU services can be purchased with the endpoint below:
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: etisalat
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for airtime purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing airtime purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is etisalat
+amount	M	Number	The amount you wish to topup
+phone	M	Number	The phone number of the recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "9mobile Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": "150",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4.5,
+            "total_amount": 145.5,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "150",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415991838224542218600989",
+            "commission_details": {
+                "amount": 4.5,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010335779345",
+    "amount": 150,
+    "transaction_date": "2025-03-10T09:33:03.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "9mobile Airtime VTU",
+            "unique_element": "08011111111",
+            "unit_price": 150,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 5,
+            "total_amount": 145.5,
+            "discount": null,
+            "type": "Airtime Recharge",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 150,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415991838224542218600989",
+            "product_id": 4,
+            "commission_details": {
+                "amount": 5,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010335779345",
+    "amount": 150,
+    "transaction_date": "2025-03-10T09:33:03.000000Z",
+    "purchased_code": ""
+}
+
+MTN Data Subscription API
+This section contains the recommended flow for integrating MTN Data Subscription services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+ 
+
+Available Endpoints
+To integrate the VTpass MTN Data Subscription Payment RESTful API, the endpoints below applies:
+
+Get Variation Codes: this returns variation codes for various MTN Data (subscription plans)
+Purchase Product (Using the variation code gotten in the first step)
+Query transaction status
+ 
+
+GET VARIATION CODES
+Using a GET method, the VTpass variation codes for MTN Data subscription plans can be accessed with the endpoint below:
+
+Live:   https://vtpass.com/api/service-variations?serviceID=mtn-data
+
+Sandbox: https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+N/A	N/A	N/A	N/A
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "000",
+    "content": {
+        "ServiceName": "MTN Data",
+        "serviceID": "mtn-data",
+        "convinience_fee": "0 %",
+        "variations": [
+            {
+                "variation_code": "mtn-10mb-100",
+                "name": "N100 100MB - 24 hrs",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-50mb-200",
+                "name": "N200 200MB - 2 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100mb-1000",
+                "name": "N1000 1.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-500mb-2000",
+                "name": "N2000 4.5GB - 30 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-20hrs-1500",
+                "name": "N1500 6GB - 7 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-2500",
+                "name": "N2500 6GB - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-data-3000",
+                "name": "N3000 8GB - 30 days",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-1gb-3500",
+                "name": "N3500 10GB - 30 days",
+                "variation_amount": "3500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100hr-5000",
+                "name": "N5000 15GB - 30 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-6000",
+                "name": "N6000 20GB - 30 days",
+                "variation_amount": "6000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-40gb-10000",
+                "name": "N10000 40GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-75gb-15000",
+                "name": "N15000 75GB - 30 days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-110gb-20000",
+                "name": "N20000 110GB - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-1500",
+                "name": "N1500 3GB - 30 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-25gb-sme-10000",
+                "name": "MTN N10,000 25GB SME Mobile Data ( 1 Month)",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-165gb-sme-50000",
+                "name": "MTN N50,000 165GB SME Mobile Data (2-Months)",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-360gb-sme-100000",
+                "name": "MTN N100,000 360GB SME Mobile Data (3 Months)",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-4-5tb-450000",
+                "name": "MTN N450,000 4.5TB Mobile Data (1 Year)",
+                "variation_amount": "450000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-1tb-110000",
+                "name": "MTN N100,000 1TB Mobile Data (1 Year)",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-2-5gb-600",
+                "name": "MTN N600 2.5GB - 2 days",
+                "variation_amount": "600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-120gb-22000",
+                "name": "MTN N22000 120GB Monthly Plan + 80mins",
+                "variation_amount": "22000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100gb-20000",
+                "name": "MTN 100GB 2-Month Plan",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-160gb-30000",
+                "name": "MTN N30,000 160GB 2-Month Plan",
+                "variation_amount": "30000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-400gb-50000",
+                "name": "MTN N50,000 400GB 3-Month Plan",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-600gb-75000",
+                "name": "MTN N75,000 600GB 3-Months Plan",
+                "variation_amount": "75000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-300",
+                "name": "MTN N300 Xtratalk Weekly Bundle",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-500",
+                "name": "MTN N500 Xtratalk Weekly Bundle",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-1000",
+                "name": "MTN N1000 Xtratalk Monthly Bundle",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-2000",
+                "name": "MTN N2000 Xtratalk Monthly Bundle",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-5000",
+                "name": "MTN N5000 Xtratalk Monthly Bundle",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-10000",
+                "name": "MTN N10000 Xtratalk Monthly Bundle",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-15000",
+                "name": "MTN N15000 Xtratalk Monthly Bundle",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-20000",
+                "name": "MTN N20000 Xtratalk Monthly Bundle",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-800",
+                "name": "MTN N800 3GB - 2 days",
+                "variation_amount": "800.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-7gb-2000",
+                "name": "MTN N2000 7GB - 7 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtradata-200",
+                "name": "MTN N200 Xtradata",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-300",
+                "name": "MTN N200 Xtratalk - 3 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            }
+        ],
+        "varations": [
+            {
+                "variation_code": "mtn-10mb-100",
+                "name": "N100 100MB - 24 hrs",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-50mb-200",
+                "name": "N200 200MB - 2 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100mb-1000",
+                "name": "N1000 1.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-500mb-2000",
+                "name": "N2000 4.5GB - 30 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-20hrs-1500",
+                "name": "N1500 6GB - 7 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-2500",
+                "name": "N2500 6GB - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-data-3000",
+                "name": "N3000 8GB - 30 days",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-1gb-3500",
+                "name": "N3500 10GB - 30 days",
+                "variation_amount": "3500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100hr-5000",
+                "name": "N5000 15GB - 30 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-6000",
+                "name": "N6000 20GB - 30 days",
+                "variation_amount": "6000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-40gb-10000",
+                "name": "N10000 40GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-75gb-15000",
+                "name": "N15000 75GB - 30 days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-110gb-20000",
+                "name": "N20000 110GB - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-1500",
+                "name": "N1500 3GB - 30 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-25gb-sme-10000",
+                "name": "MTN N10,000 25GB SME Mobile Data ( 1 Month)",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-165gb-sme-50000",
+                "name": "MTN N50,000 165GB SME Mobile Data (2-Months)",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-360gb-sme-100000",
+                "name": "MTN N100,000 360GB SME Mobile Data (3 Months)",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-4-5tb-450000",
+                "name": "MTN N450,000 4.5TB Mobile Data (1 Year)",
+                "variation_amount": "450000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-1tb-110000",
+                "name": "MTN N100,000 1TB Mobile Data (1 Year)",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-2-5gb-600",
+                "name": "MTN N600 2.5GB - 2 days",
+                "variation_amount": "600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-120gb-22000",
+                "name": "MTN N22000 120GB Monthly Plan + 80mins",
+                "variation_amount": "22000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-100gb-20000",
+                "name": "MTN 100GB 2-Month Plan",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-160gb-30000",
+                "name": "MTN N30,000 160GB 2-Month Plan",
+                "variation_amount": "30000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-400gb-50000",
+                "name": "MTN N50,000 400GB 3-Month Plan",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-600gb-75000",
+                "name": "MTN N75,000 600GB 3-Months Plan",
+                "variation_amount": "75000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-300",
+                "name": "MTN N300 Xtratalk Weekly Bundle",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-500",
+                "name": "MTN N500 Xtratalk Weekly Bundle",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-1000",
+                "name": "MTN N1000 Xtratalk Monthly Bundle",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-2000",
+                "name": "MTN N2000 Xtratalk Monthly Bundle",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-5000",
+                "name": "MTN N5000 Xtratalk Monthly Bundle",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-10000",
+                "name": "MTN N10000 Xtratalk Monthly Bundle",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-15000",
+                "name": "MTN N15000 Xtratalk Monthly Bundle",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-20000",
+                "name": "MTN N20000 Xtratalk Monthly Bundle",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-3gb-800",
+                "name": "MTN N800 3GB - 2 days",
+                "variation_amount": "800.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-7gb-2000",
+                "name": "MTN N2000 7GB - 7 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtradata-200",
+                "name": "MTN N200 Xtradata",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "mtn-xtratalk-300",
+                "name": "MTN N200 Xtratalk - 3 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            }
+        ]
+    }
+}
+PURCHASE PRODUCT
+Using a POST method, MTN Data bundle can with the endpoint below:
+
+ 
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: mtn-data
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for data purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing data purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is mtn-data
+billersCode	M	String	The phone number you wish to make the Subscription payment on
+variation_code	M	String	The code of the variation (as specified in the GET VARIATIONS method as variation_code).
+amount	O	Number	The amount of the variation (as specified in the GET VARIATIONS endpoint as variation_amount)
+This amount will be ignored as the variation code determine the price of the data bundle.
+
+phone	M	Number	The phone number of the customer or recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "MTN Data",
+            "unique_element": "08011111111",
+            "unit_price": "100",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4,
+            "total_amount": 96,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "100",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415991578739548187285972",
+            "commission_details": {
+                "amount": 4,
+                "rate": "4.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010323857076",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:32:37.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	
+This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "MTN Data",
+            "unique_element": "08011111111",
+            "unit_price": 100,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4,
+            "total_amount": 96,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 100,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415991578739548187285972",
+            "product_id": 8,
+            "commission_details": {
+                "amount": 4,
+                "rate": "4.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010323857076",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:32:37.000000Z",
+    "purchased_code": ""
+}
+
+Airtel Data Subscription API
+This section contains the recommended flow for integrating Airtel Data Subscription services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+ 
+
+Available Endpoints
+To integrate the VTpass Airtel Data Subscription Payment RESTful API, the endpoints below applies:
+
+Get Variation Codes: this returns variation codes for various Airtel Data (subscription plans)
+Purchase Product (Using the variation code gotten in the first step)
+Query transaction status
+ 
+
+GET VARIATION CODES
+Using a GET method, the VTpass variation codes for Airtel Data subscription plans can be accessed with the endpoint below:
+
+Live:   https://vtpass.com/api/service-variations?serviceID=airtel-data
+
+Sandbox: https://sandbox.vtpass.com/api/service-variations?serviceID=airtel-data
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+N/A	N/A	N/A	N/A
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "000",
+    "content": {
+        "ServiceName": "Airtel Data",
+        "serviceID": "airtel-data",
+        "convinience_fee": "0 %",
+        "variations": [
+            {
+                "variation_code": "airt-50",
+                "name": "Airtel Data Bundle - 50 Naira - 25MB  - 1Day",
+                "variation_amount": "49.99",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-100",
+                "name": "Airtel Data Bundle - 100 Naira - 75MB - 1Day",
+                "variation_amount": "99.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-200",
+                "name": "Airtel Data Bundle - 200 Naira - 200MB - 3Days",
+                "variation_amount": "199.03",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-300",
+                "name": "Airtel Data Bundle - 300 Naira - 350MB - 7 Days",
+                "variation_amount": "299.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-500",
+                "name": "Airtel Data Bundle - 500 Naira - 750MB - 14 Days",
+                "variation_amount": "499.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1000",
+                "name": "Airtel Data Bundle - 1,000 Naira - 1.5GB - 30 Days",
+                "variation_amount": "999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1500",
+                "name": "Airtel Data Bundle - 1,500 Naira - 3GB - 30 Days",
+                "variation_amount": "1499.01",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-2000",
+                "name": "Airtel Data Bundle - 2,000 Naira - 4.5GB - 30 Days",
+                "variation_amount": "1999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-3000",
+                "name": "Airtel Data Bundle - 3,000 Naira - 8GB - 30 Days",
+                "variation_amount": "2999.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-4000",
+                "name": "Airtel Data Bundle - 4,000 Naira - 11GB - 30 Days",
+                "variation_amount": "3999.01",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-5000",
+                "name": "Airtel Data Bundle - 5,000 Naira - 15GB - 30 Days",
+                "variation_amount": "4999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1500-2",
+                "name": "Airtel Binge Data - 1,500 Naira (7 Days) - 6GB",
+                "variation_amount": "1499.03",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-10000",
+                "name": "Airtel Data Bundle - 10,000 Naira - 40GB - 30 Days",
+                "variation_amount": "9999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-15000",
+                "name": "Airtel Data Bundle - 15,000 Naira - 75GB - 30 Days",
+                "variation_amount": "14999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-20000",
+                "name": "Airtel Data Bundle - 20,000 Naira - 110GB - 30 Days",
+                "variation_amount": "19999.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-600",
+                "name": "Airtel Data - 600 Naira - 1GB - 14 days",
+                "variation_amount": "600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1000-7",
+                "name": "Airtel Data - 1000 Naira - 1.5GB - 7 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-2000-7",
+                "name": "Airtel Data - 2000 Naira - 7GB - 7 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-5000-7",
+                "name": "Airtel Data - 5000 Naira - 25GB - 7 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-400-1",
+                "name": "Airtel Data - 400 Naira - 1.5GB - 1 day",
+                "variation_amount": "400.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-800-2",
+                "name": "Airtel Data - 800 Naira - 3.5GB - 2 days",
+                "variation_amount": "800.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-6000-30",
+                "name": "Airtel Data - 6000 Naira - 23GB - 30 days",
+                "variation_amount": "6000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-100",
+                "name": "600 Naira Voice Bundle",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-200",
+                "name": "1200 Naira Voice Bundle",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-500",
+                "name": "3000 Naira Voice Bundle",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-1000",
+                "name": "6000 Naira Voice Bundle",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            }
+        ],
+        "varations": [
+            {
+                "variation_code": "airt-50",
+                "name": "Airtel Data Bundle - 50 Naira - 25MB  - 1Day",
+                "variation_amount": "49.99",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-100",
+                "name": "Airtel Data Bundle - 100 Naira - 75MB - 1Day",
+                "variation_amount": "99.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-200",
+                "name": "Airtel Data Bundle - 200 Naira - 200MB - 3Days",
+                "variation_amount": "199.03",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-300",
+                "name": "Airtel Data Bundle - 300 Naira - 350MB - 7 Days",
+                "variation_amount": "299.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-500",
+                "name": "Airtel Data Bundle - 500 Naira - 750MB - 14 Days",
+                "variation_amount": "499.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1000",
+                "name": "Airtel Data Bundle - 1,000 Naira - 1.5GB - 30 Days",
+                "variation_amount": "999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1500",
+                "name": "Airtel Data Bundle - 1,500 Naira - 3GB - 30 Days",
+                "variation_amount": "1499.01",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-2000",
+                "name": "Airtel Data Bundle - 2,000 Naira - 4.5GB - 30 Days",
+                "variation_amount": "1999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-3000",
+                "name": "Airtel Data Bundle - 3,000 Naira - 8GB - 30 Days",
+                "variation_amount": "2999.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-4000",
+                "name": "Airtel Data Bundle - 4,000 Naira - 11GB - 30 Days",
+                "variation_amount": "3999.01",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-5000",
+                "name": "Airtel Data Bundle - 5,000 Naira - 15GB - 30 Days",
+                "variation_amount": "4999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1500-2",
+                "name": "Airtel Binge Data - 1,500 Naira (7 Days) - 6GB",
+                "variation_amount": "1499.03",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-10000",
+                "name": "Airtel Data Bundle - 10,000 Naira - 40GB - 30 Days",
+                "variation_amount": "9999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-15000",
+                "name": "Airtel Data Bundle - 15,000 Naira - 75GB - 30 Days",
+                "variation_amount": "14999.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-20000",
+                "name": "Airtel Data Bundle - 20,000 Naira - 110GB - 30 Days",
+                "variation_amount": "19999.02",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-600",
+                "name": "Airtel Data - 600 Naira - 1GB - 14 days",
+                "variation_amount": "600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-1000-7",
+                "name": "Airtel Data - 1000 Naira - 1.5GB - 7 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-2000-7",
+                "name": "Airtel Data - 2000 Naira - 7GB - 7 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-5000-7",
+                "name": "Airtel Data - 5000 Naira - 25GB - 7 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-400-1",
+                "name": "Airtel Data - 400 Naira - 1.5GB - 1 day",
+                "variation_amount": "400.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-800-2",
+                "name": "Airtel Data - 800 Naira - 3.5GB - 2 days",
+                "variation_amount": "800.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-6000-30",
+                "name": "Airtel Data - 6000 Naira - 23GB - 30 days",
+                "variation_amount": "6000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-100",
+                "name": "600 Naira Voice Bundle",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-200",
+                "name": "1200 Naira Voice Bundle",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-500",
+                "name": "3000 Naira Voice Bundle",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "airt-voice-1000",
+                "name": "6000 Naira Voice Bundle",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            }
+        ]
+    }
+}
+ 
+
+PURCHASE PRODUCT
+
+Using a POST method, Airtel Data bundle can with the endpoint below:
+
+ 
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: airtel-data
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for data purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing data purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is airtel-data
+billersCode	M	String	The phone number you wish to make the Subscription payment on
+variation_code	M	String	The code of the variation (as specified in the GET VARIATIONS method as variation_code).
+amount	O	Number	The amount of the variation (as specified in the GET VARIATIONS endpoint as variation_amount)
+This amount will be ignored as the variation code determine the price of the data bundle.
+
+phone	M	Number	The phone number of the customer or recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "Airtel Data",
+            "unique_element": "08011111111",
+            "unit_price": "100",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "100",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415992861028790315130998",
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010343525412",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:34:46.000000Z",
+    "purchased_code": ""
+}
+ 
+
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	
+This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "Airtel Data",
+            "unique_element": "08011111111",
+            "unit_price": 100,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 100,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415992861028790315130998",
+            "product_id": 7,
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010343525412",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:34:46.000000Z",
+    "purchased_code": ""
+}
+
+GLO Data Subscription API
+This section contains the recommended flow for integrating GLO Data Subscription services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+ 
+
+Available Endpoints
+To integrate the VTpass GLO Data Subscription Payment RESTful API, the endpoints below applies:
+
+Get Variation Codes: this returns variation codes for various GLO Data (subscription plans)
+Purchase Product (Using the variation code gotten in the first step)
+Query transaction status
+ 
+
+GET VARIATION CODES
+Using a GET method, the VTpass variation codes for GLO Data subscription plans can be accessed with the endpoint below:
+
+Live:   https://vtpass.com/api/service-variations?serviceID=glo-data
+
+Sandbox: https://sandbox.vtpass.com/api/service-variations?serviceID=glo-data
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+N/A	N/A	N/A	N/A
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "000",
+    "content": {
+        "ServiceName": "GLO Data",
+        "serviceID": "glo-data",
+        "convinience_fee": "0 %",
+        "variations": [
+            {
+                "variation_code": "glo100",
+                "name": "Glo Data N100 -  105MB - 2 day",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo200",
+                "name": "Glo Data N200 -  350MB - 4 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo500",
+                "name": "Glo Data N500 -  1.05GB - 14 days",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo1000",
+                "name": "Glo Data N1000 -  2.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo2000",
+                "name": "Glo Data N2000 -  5.8GB - 30 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo2500",
+                "name": "Glo Data N2500 -  7.7GB - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo3000",
+                "name": "Glo Data N3000 -  10GB - 30 days",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo4000",
+                "name": "Glo Data N4000 -  13.25GB - 30 days",
+                "variation_amount": "4000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo5000",
+                "name": "Glo Data N5000 -  18.25GB - 30 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo8000",
+                "name": "Glo Data N8000 -  29.5GB - 30 days",
+                "variation_amount": "8000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo10000",
+                "name": "Glo Data N10000 -  50GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo15000",
+                "name": "Glo Data N15000 -  93GB - 30 days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo18000",
+                "name": "Glo Data N18000 -  119GB - 30 days",
+                "variation_amount": "18000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo1500",
+                "name": "Glo Data N1500 -  4.1GB - 30 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo20000",
+                "name": "Glo Data N20000 -  138GB - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-70",
+                "name": "Glo Data (SME) N70 -  200MB - 14 days",
+                "variation_amount": "70.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-320",
+                "name": "Glo Data (SME) N320 - 1GB 30 days",
+                "variation_amount": "320.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-960",
+                "name": "Glo Data (SME) N960 - 3GB 30 days",
+                "variation_amount": "960.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-3100",
+                "name": "Glo Data (SME) N3100 - 10GB - 30 Days",
+                "variation_amount": "3100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-640",
+                "name": "Glo Data (SME) N640 - 2GB 30 days",
+                "variation_amount": "640.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-160-14",
+                "name": "Glo Data (SME) N160 - 500MB 14 days",
+                "variation_amount": "160.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-1600",
+                "name": "Glo Data (SME) N1600 - 5GB 30 days",
+                "variation_amount": "1600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-daily-50",
+                "name": "45MB + 5MB Night N50 Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-daily-100",
+                "name": "115Mb + 35MB Night N100 Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-2days-200",
+                "name": "240MB + 110MB Night N200 Oneoff",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-2weeks-500",
+                "name": "800MB + 1GB Night N500 Oneoff",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-1000",
+                "name": "1.9GB + 2GB Night N1000 Oneoff",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-1500",
+                "name": "3.5GB + 4GB Night N1500 Oneoff",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-2000",
+                "name": "5.2GB + 4GB Night N2000 Oneoff",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-2500",
+                "name": "6.8GB + 4GB Night N2500 Oneoff",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-3000",
+                "name": "10GB +4GB Night N3000 Oneoff",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-4000",
+                "name": "14GB + 4GB Night N4000 Oneoff",
+                "variation_amount": "4000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-5000",
+                "name": "20GB + 4GB Night N5000 Oneoff",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-8000",
+                "name": "27.5GB + 2GB Night N8000 Oneoff",
+                "variation_amount": "8000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-10000",
+                "name": "46GB + 4GB N10000 Oneoff",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-15000",
+                "name": "86GB + 7GB N15000 Oneoff",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-18000",
+                "name": "109GB + 10Gb N18000 Oneoff",
+                "variation_amount": "18000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-20000",
+                "name": "126GB + 12GB N20000 Oneoff",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-300",
+                "name": "N300 1GB Special",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-500",
+                "name": "N500 2GB Special",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-1500",
+                "name": "N1500 7GB Special",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-weekend-500",
+                "name": "N500 3GB Weekend",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-30000",
+                "name": "N30000 225GB Glo Mega Oneoff",
+                "variation_amount": "30000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-36000",
+                "name": "N36000 300GB Glo Mega Oneoff",
+                "variation_amount": "36000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-50000",
+                "name": "N50000 425GB Glo Mega Oneoff",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-60000",
+                "name": "N60000 525GB Glo Mega Oneoff",
+                "variation_amount": "60000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-75000",
+                "name": "N75000 675GB Glo Mega Oneoff",
+                "variation_amount": "75000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-75000",
+                "name": "N100000 1TB Glo Mega Oneoff",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-150",
+                "name": "Glo TV VOD 500 MB 3days Oneoff",
+                "variation_amount": "150.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-450",
+                "name": "Glo TV VOD 2GB 7days Oneoff",
+                "variation_amount": "450.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-1400",
+                "name": "Glo TV VOD 6GB 30days Oneoff",
+                "variation_amount": "1400.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-900",
+                "name": "Glo TV Lite 2GB Oneoff",
+                "variation_amount": "900.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-3200",
+                "name": "Glo TV Max 6 GB Oneoff",
+                "variation_amount": "3200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-25",
+                "name": "WTF N25 100MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-50",
+                "name": "WTF N50 200MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-100",
+                "name": "WTF N100 500MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-25",
+                "name": "Telegram N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-50",
+                "name": "Telegram N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-100",
+                "name": "Telegram N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-25",
+                "name": "Instagram N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-50",
+                "name": "Instagram N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-100",
+                "name": "Instagram N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-25",
+                "name": "Tiktok N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-50",
+                "name": "Tiktok N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-100",
+                "name": "Tiktok N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-25",
+                "name": "Opera N25 25MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-50",
+                "name": "Opera N50 100MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-100",
+                "name": "Opera N100 300MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-50",
+                "name": "Youtube N50 100MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-100",
+                "name": "Youtube N100 200MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-250",
+                "name": "Youtube N250 500MB Oneoff",
+                "variation_amount": "250.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-time-50",
+                "name": "Youtube N50 500MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-time-130",
+                "name": "Youtube N130 1.5GB Oneoff",
+                "variation_amount": "130.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-night-50",
+                "name": "Youtube N50 500MB Night Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-night-200",
+                "name": "Youtube N200 2GB Night Oneoff",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-100",
+                "name": "Glo MyG N100 400 MB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-300",
+                "name": "Glo MyG N300 1 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-500",
+                "name": "Glo MyG N500 1.5 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-1000",
+                "name": "Glo MyG N1000 3.5 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            }
+        ],
+        "varations": [
+            {
+                "variation_code": "glo100",
+                "name": "Glo Data N100 -  105MB - 2 day",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo200",
+                "name": "Glo Data N200 -  350MB - 4 days",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo500",
+                "name": "Glo Data N500 -  1.05GB - 14 days",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo1000",
+                "name": "Glo Data N1000 -  2.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo2000",
+                "name": "Glo Data N2000 -  5.8GB - 30 days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo2500",
+                "name": "Glo Data N2500 -  7.7GB - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo3000",
+                "name": "Glo Data N3000 -  10GB - 30 days",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo4000",
+                "name": "Glo Data N4000 -  13.25GB - 30 days",
+                "variation_amount": "4000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo5000",
+                "name": "Glo Data N5000 -  18.25GB - 30 days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo8000",
+                "name": "Glo Data N8000 -  29.5GB - 30 days",
+                "variation_amount": "8000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo10000",
+                "name": "Glo Data N10000 -  50GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo15000",
+                "name": "Glo Data N15000 -  93GB - 30 days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo18000",
+                "name": "Glo Data N18000 -  119GB - 30 days",
+                "variation_amount": "18000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo1500",
+                "name": "Glo Data N1500 -  4.1GB - 30 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo20000",
+                "name": "Glo Data N20000 -  138GB - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-70",
+                "name": "Glo Data (SME) N70 -  200MB - 14 days",
+                "variation_amount": "70.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-320",
+                "name": "Glo Data (SME) N320 - 1GB 30 days",
+                "variation_amount": "320.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-960",
+                "name": "Glo Data (SME) N960 - 3GB 30 days",
+                "variation_amount": "960.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-3100",
+                "name": "Glo Data (SME) N3100 - 10GB - 30 Days",
+                "variation_amount": "3100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-640",
+                "name": "Glo Data (SME) N640 - 2GB 30 days",
+                "variation_amount": "640.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-160-14",
+                "name": "Glo Data (SME) N160 - 500MB 14 days",
+                "variation_amount": "160.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-dg-1600",
+                "name": "Glo Data (SME) N1600 - 5GB 30 days",
+                "variation_amount": "1600.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-daily-50",
+                "name": "45MB + 5MB Night N50 Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-daily-100",
+                "name": "115Mb + 35MB Night N100 Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-2days-200",
+                "name": "240MB + 110MB Night N200 Oneoff",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-2weeks-500",
+                "name": "800MB + 1GB Night N500 Oneoff",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-1000",
+                "name": "1.9GB + 2GB Night N1000 Oneoff",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-1500",
+                "name": "3.5GB + 4GB Night N1500 Oneoff",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-2000",
+                "name": "5.2GB + 4GB Night N2000 Oneoff",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-2500",
+                "name": "6.8GB + 4GB Night N2500 Oneoff",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-3000",
+                "name": "10GB +4GB Night N3000 Oneoff",
+                "variation_amount": "3000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-4000",
+                "name": "14GB + 4GB Night N4000 Oneoff",
+                "variation_amount": "4000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-5000",
+                "name": "20GB + 4GB Night N5000 Oneoff",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-8000",
+                "name": "27.5GB + 2GB Night N8000 Oneoff",
+                "variation_amount": "8000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-10000",
+                "name": "46GB + 4GB N10000 Oneoff",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-15000",
+                "name": "86GB + 7GB N15000 Oneoff",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-18000",
+                "name": "109GB + 10Gb N18000 Oneoff",
+                "variation_amount": "18000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-monthly-20000",
+                "name": "126GB + 12GB N20000 Oneoff",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-300",
+                "name": "N300 1GB Special",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-500",
+                "name": "N500 2GB Special",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-special-1500",
+                "name": "N1500 7GB Special",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-weekend-500",
+                "name": "N500 3GB Weekend",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-30000",
+                "name": "N30000 225GB Glo Mega Oneoff",
+                "variation_amount": "30000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-36000",
+                "name": "N36000 300GB Glo Mega Oneoff",
+                "variation_amount": "36000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-50000",
+                "name": "N50000 425GB Glo Mega Oneoff",
+                "variation_amount": "50000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-60000",
+                "name": "N60000 525GB Glo Mega Oneoff",
+                "variation_amount": "60000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-75000",
+                "name": "N75000 675GB Glo Mega Oneoff",
+                "variation_amount": "75000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-mega-75000",
+                "name": "N100000 1TB Glo Mega Oneoff",
+                "variation_amount": "100000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-150",
+                "name": "Glo TV VOD 500 MB 3days Oneoff",
+                "variation_amount": "150.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-450",
+                "name": "Glo TV VOD 2GB 7days Oneoff",
+                "variation_amount": "450.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-1400",
+                "name": "Glo TV VOD 6GB 30days Oneoff",
+                "variation_amount": "1400.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-900",
+                "name": "Glo TV Lite 2GB Oneoff",
+                "variation_amount": "900.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tv-3200",
+                "name": "Glo TV Max 6 GB Oneoff",
+                "variation_amount": "3200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-25",
+                "name": "WTF N25 100MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-50",
+                "name": "WTF N50 200MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-wtf-100",
+                "name": "WTF N100 500MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-25",
+                "name": "Telegram N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-50",
+                "name": "Telegram N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-telegram-100",
+                "name": "Telegram N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-25",
+                "name": "Instagram N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-50",
+                "name": "Instagram N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-insta-100",
+                "name": "Instagram N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-25",
+                "name": "Tiktok N25 20MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-50",
+                "name": "Tiktok N50 50MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-tiktok-100",
+                "name": "Tiktok N100 125MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-25",
+                "name": "Opera N25 25MB Oneoff",
+                "variation_amount": "25.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-50",
+                "name": "Opera N50 100MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-opera-100",
+                "name": "Opera N100 300MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-50",
+                "name": "Youtube N50 100MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-100",
+                "name": "Youtube N100 200MB Oneoff",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-250",
+                "name": "Youtube N250 500MB Oneoff",
+                "variation_amount": "250.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-time-50",
+                "name": "Youtube N50 500MB Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-time-130",
+                "name": "Youtube N130 1.5GB Oneoff",
+                "variation_amount": "130.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-night-50",
+                "name": "Youtube N50 500MB Night Oneoff",
+                "variation_amount": "50.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-youtube-night-200",
+                "name": "Youtube N200 2GB Night Oneoff",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-100",
+                "name": "Glo MyG N100 400 MB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-300",
+                "name": "Glo MyG N300 1 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-500",
+                "name": "Glo MyG N500 1.5 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "glo-social-oneoff-1000",
+                "name": "Glo MyG N1000 3.5 GB OneOff (Whatsapp, Instagram, Snapchat, Boomplay, Audiomac, GloTV, Tiktok)",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            }
+        ]
+    }
+}
+
+PURCHASE PRODUCT
+Using a POST method, GLO Data bundle can with the endpoint below:
+
+ 
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: glo-data
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for data purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing data purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is glo-data
+billersCode	M	String	The phone number you wish to make the Subscription payment on
+variation_code	M	String	The code of the variation (as specified in the GET VARIATIONS method as variation_code).
+amount	O	Number	The amount of the variation (as specified in the GET VARIATIONS endpoint as variation_amount)
+This amount will be ignored as the variation code determine the price of the data bundle.
+
+phone	M	Number	The phone number of the customer or recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "GLO Data",
+            "unique_element": "08011111111",
+            "unit_price": "100",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4,
+            "total_amount": 96,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "100",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415993527341826338904204",
+            "commission_details": {
+                "amount": 4,
+                "rate": "4.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010355265156",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:35:52.000000Z",
+    "purchased_code": ""
+}
+ 
+
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	
+This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "GLO Data",
+            "unique_element": "08011111111",
+            "unit_price": 100,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 4,
+            "total_amount": 96,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 100,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415993527341826338904204",
+            "product_id": 9,
+            "commission_details": {
+                "amount": 4,
+                "rate": "4.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010355265156",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:35:52.000000Z",
+    "purchased_code": ""
+}
+
+9mobile Data Subscription API
+This section contains the recommended flow for integrating 9mobile Data Subscription services on the VTpass RESTful API.
+
+ 
+
+Authentication
+Learn about authentication from here.
+
+ 
+
+ 
+
+Available Endpoints
+To integrate the VTpass 9mobile Data Subscription Payment RESTful API, the endpoints below applies:
+
+Get Variation Codes: this returns variation codes for various 9mobile Data (subscription plans)
+Purchase Product (Using the variation code gotten in the first step)
+Query transaction status
+ 
+
+GET VARIATION CODES
+Using a GET method, the VTpass variation codes for 9mobile Data subscription plans can be accessed with the endpoint below:
+
+Live:   https://vtpass.com/api/service-variations?serviceID=etisalat-data
+
+Sandbox: https://sandbox.vtpass.com/api/service-variations?serviceID=etisalat-data
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+N/A	N/A	N/A	N/A
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "000",
+    "content": {
+        "ServiceName": "9mobile Data",
+        "serviceID": "etisalat-data",
+        "convinience_fee": "0 %",
+        "variations": [
+            {
+                "variation_code": "eti-100",
+                "name": "9mobile Data - 100 Naira - 100MB - 1 day",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-200",
+                "name": "9mobile Data - 200 Naira - 650MB - 1 day",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-500",
+                "name": "9mobile Data - 500 Naira - 500MB - 30 Days",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1000",
+                "name": "9mobile Data - 1000 Naira - 1.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-2000",
+                "name": "9mobile Data - 2000 Naira - 4.5GB Data - 30 Days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-5000",
+                "name": "9mobile Data - 5000 Naira - 15GB Data - 30 Days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-10000",
+                "name": "9mobile Data - 10000 Naira - 40GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-15000",
+                "name": "9mobile Data - 15000 Naira - 75GB - 30 Days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-27500",
+                "name": "9mobile Data - 27,500 Naira - 30GB - 90 days",
+                "variation_amount": "27500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-55000",
+                "name": "9mobile Data - 55,000 Naira - 60GB - 180 days",
+                "variation_amount": "55000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-110000",
+                "name": "9mobile Data - 110,000 Naira - 120GB - 365 days",
+                "variation_amount": "110000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-300",
+                "name": "9mobile 1GB + 100MB (1 day) - 300 Naira",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-2500",
+                "name": "9mobile 11GB (7GB+ 4GB Night) - 2,500 Naira - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-7000",
+                "name": "9mobile 35 GB - 7,000 Naira - 30 days",
+                "variation_amount": "7000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-20000",
+                "name": "9mobile 125GB - 20,000 Naira - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1000",
+                "name": "9mobile 4GB (2GB + 2GB Night) - 1000 Naira",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1500-7",
+                "name": "9mobile 7GB (6GB+1GB Night) - 7 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-150-1",
+                "name": "9mobile 200MB (100MB + 100MB night) + 300secs - 1 day",
+                "variation_amount": "150.00",
+                "fixedPrice": "Yes"
+            }
+        ],
+        "varations": [
+            {
+                "variation_code": "eti-100",
+                "name": "9mobile Data - 100 Naira - 100MB - 1 day",
+                "variation_amount": "100.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-200",
+                "name": "9mobile Data - 200 Naira - 650MB - 1 day",
+                "variation_amount": "200.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-500",
+                "name": "9mobile Data - 500 Naira - 500MB - 30 Days",
+                "variation_amount": "500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1000",
+                "name": "9mobile Data - 1000 Naira - 1.5GB - 30 days",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-2000",
+                "name": "9mobile Data - 2000 Naira - 4.5GB Data - 30 Days",
+                "variation_amount": "2000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-5000",
+                "name": "9mobile Data - 5000 Naira - 15GB Data - 30 Days",
+                "variation_amount": "5000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-10000",
+                "name": "9mobile Data - 10000 Naira - 40GB - 30 days",
+                "variation_amount": "10000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-15000",
+                "name": "9mobile Data - 15000 Naira - 75GB - 30 Days",
+                "variation_amount": "15000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-27500",
+                "name": "9mobile Data - 27,500 Naira - 30GB - 90 days",
+                "variation_amount": "27500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-55000",
+                "name": "9mobile Data - 55,000 Naira - 60GB - 180 days",
+                "variation_amount": "55000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-110000",
+                "name": "9mobile Data - 110,000 Naira - 120GB - 365 days",
+                "variation_amount": "110000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-300",
+                "name": "9mobile 1GB + 100MB (1 day) - 300 Naira",
+                "variation_amount": "300.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-2500",
+                "name": "9mobile 11GB (7GB+ 4GB Night) - 2,500 Naira - 30 days",
+                "variation_amount": "2500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-7000",
+                "name": "9mobile 35 GB - 7,000 Naira - 30 days",
+                "variation_amount": "7000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-20000",
+                "name": "9mobile 125GB - 20,000 Naira - 30 days",
+                "variation_amount": "20000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1000",
+                "name": "9mobile 4GB (2GB + 2GB Night) - 1000 Naira",
+                "variation_amount": "1000.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-1500-7",
+                "name": "9mobile 7GB (6GB+1GB Night) - 7 days",
+                "variation_amount": "1500.00",
+                "fixedPrice": "Yes"
+            },
+            {
+                "variation_code": "eti-150-1",
+                "name": "9mobile 200MB (100MB + 100MB night) + 300secs - 1 day",
+                "variation_amount": "150.00",
+                "fixedPrice": "Yes"
+            }
+        ]
+    }
+}
+PURCHASE PRODUCT
+
+Using a POST method, 9mobile Data bundle can with the endpoint below:
+
+ 
+
+Live: https://vtpass.com/api/pay
+
+Sandbox: https://sandbox.vtpass.com/api/pay
+
+ServiceID: etisalat-data
+
+ 
+
+The sandbox environment provides specific scenarios to simulate success, failure, or unexpected outcomes for data purchases. Use the examples below to test and observe how your integration behaves.
+
+Refer to the table below to find the correct phone number for simulating various API responses:
+
+Phone Number	 Event	Description
+08011111111	Successful 	Returns a successful response for testing data purchases.
+201000000000	Pending	Simulates an unexpected pending response.
+500000000000	Unexpected Response	Simulates an expected response, used to test how your system handles anomalies.
+400000000000	No Response	Simulates a scenario where the API returns no response.
+300000000000	Timeout	Simulates a timeout scenario for testing response handling under delays.
+Any random phone number other than the above	Failed	Simulates a failed scenario for testing error handling for transaction failure.
+ 
+
+NEEDED PAYLOAD
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	This is a unique reference with which you can use to identify and query the status of a given transaction after the transaction has been executed.
+Click here to understand how to generate a valid request ID
+
+serviceID	M	String	Service ID as specified by VTpass. In this case, it is etisalat-data
+billersCode	M	String	The phone number you wish to make the Subscription payment on
+variation_code	M	String	The code of the variation (as specified in the GET VARIATIONS method as variation_code).
+amount	O	Number	The amount of the variation (as specified in the GET VARIATIONS endpoint as variation_amount)
+This amount will be ignored as the variation code determine the price of the data bundle.
+
+phone	M	Number	The phone number of the customer or recipient of this service
+ 
+
+EXPECTED RESPONSE
+
+{
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "9mobile Data",
+            "unique_element": "08011111111",
+            "unit_price": "100",
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "convinience_fee": 0,
+            "amount": "100",
+            "platform": "api",
+            "method": "api",
+            "transactionId": "17415998339264364147458602",
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "requestId": "2025031010436619827",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:43:53.000000Z",
+    "purchased_code": ""
+}
+QUERY TRANSACTION STATUS
+Using a POST method, transaction status can be queried with the endpoint below:
+
+Live: https://vtpass.com/api/requery
+
+Sandbox: https://sandbox.vtpass.com/api/requery
+
+FIELDS	Mandatory/Optional	TYPE	DESCRIPTION
+request_id	M	String	
+This is the reference with which you sent when purchasing a transaction after the transaction has been executed.
+
+ 
+
+EXPECTED RESPONSE
+
+{
+    "response_description": "TRANSACTION SUCCESSFUL",
+    "code": "000",
+    "content": {
+        "transactions": {
+            "status": "delivered",
+            "product_name": "9mobile Data",
+            "unique_element": "08011111111",
+            "unit_price": 100,
+            "quantity": 1,
+            "service_verification": null,
+            "channel": "api",
+            "commission": 3,
+            "total_amount": 97,
+            "discount": null,
+            "type": "Data Services",
+            "email": "sandbox@sandbox.vtpass.com",
+            "phone": "123450987623",
+            "name": null,
+            "extras": null,
+            "convinience_fee": 0,
+            "amount": 100,
+            "platform": "api",
+            "method": "wallet",
+            "transactionId": "17415998339264364147458602",
+            "product_id": 10,
+            "commission_details": {
+                "amount": 3,
+                "rate": "3.00",
+                "rate_type": "percent",
+                "computation_type": "default"
+            }
+        }
+    },
+    "requestId": "2025031010436619827",
+    "amount": 100,
+    "transaction_date": "2025-03-10T09:43:53.000000Z",
+    "purchased_code": ""
+}
+
+
+Response Codes
+This section contains the response codes you will likely get from the VTpass API.
+
+The “code” parameter would usually contain the following response.
+
+Verification Response
+These are the response codes that can be gotten for a DSTV/GOTV/Startimes smartcard verification, meter number verification for various electricity disco.
+
+Note if any of the below status code is gotten during product purchase, treat as failed.
+
+Response Code	Meaning	Note
+020	BILLER CONFIRMED	BILLER CONFIRMED
+011	INVALID ARGUMENTS	You are not passing at least one of the arguments expected in your request.
+012	PRODUCT DOES NOT EXIST	PRODUCT DOES NOT EXIST
+030	BILLER NOT REACHABLE AT THIS POINT	The biller for the product or service is unreachable.
+ 
+
+Transaction/Requery Response
+These are the response codes that can be gotten for a product purchase. Some of these codes require you look inwards into the response object for the actual transaction status while some represent failed transactions.
+
+ 
+
+Important
+Take any response that differs from the guildelines provided here as pending, and initiate a transaction requery accordingly.
+If transaction times out or response is not received, please treat as pending and initiate a transaction requery accordingly.
+
+For any unclear transaction response, always initiate a transaction requery to confirm status.
+
+ 
+
+Response Code	Meaning	Note
+000	TRANSACTION PROCESSED	Transaction is processed. Please check [content][transactions][status] for the status of the transaction. It would contain the actual state like initiated, pending, delivered. See the next table for more information.
+099	TRANSACTION IS PROCESSING	Transaction is currently precessing. In such situation, you should requery using your requestID to ascertain the current status of the transaction.
+001	TRANSACTION QUERY	The current status of a given transaction carried out on the platform
+044	TRANSACTION RESOLVED	Transaction has been resolved. Please contact us for more info.
+091	TRANSACTION NOT PROCESSED	Transaction is not processed and you will not be charged for this transaction.
+016	TRANSACTION FAILED	TRANSACTION FAILED
+010	VARIATION CODE DOES NOT EXIST	You are using an invalid variation code. Please check the list of available variation codes here.
+011	INVALID ARGUMENTS	You are not passing at least one of the arguments expected in your request.
+012	PRODUCT DOES NOT EXIST	PRODUCT DOES NOT EXIST
+013	BELOW MINIMUM AMOUNT ALLOWED	You are attempting to pay an amount lower than the minimum allowed for that product/service.
+014	REQUEST ID ALREADY EXIST	You have used the RequestID for a previous transaction.
+015	INVALID REQUEST ID	This is returned for a requery operation. This RequestID was not used on our platform.
+017	ABOVE MAXIMUM AMOUNT ALLOWED	You are attempting to pay an amount higher than the maximum allowed for that product/service.
+018	LOW WALLET BALANCE	You do not have adequate funds in your wallet to cover the cost of the transaction.
+019	LIKELY DUPLICATE TRANSACTION	You attempted to buy thesame service multiple times for the same biller_code within 30 seconds.
+021	ACCOUNT LOCKED	Your account is locked
+022	ACCOUNT SUSPENDED	Your account is suspended
+023	API ACCESS NOT ENABLE FOR USER	Your account does not have API access enabled. Please contact us to request for activation
+024	ACCOUNT INACTIVE	Your account is inactive.
+025	RECIPIENT BANK INVALID	Your bank code for bank transfer is invalid.
+026	RECIPIENT ACCOUNT COULD NOT BE VERIFIED	Your bank account number could not be verified.
+027	IP NOT WHITELISTED, CONTACT SUPPORT	You need to contact support with your server IP for whitelisting
+028	PRODUCT IS NOT WHITELISTED ON YOUR ACCOUNT	You need to whitelist products you want to vend
+030	BILLER NOT REACHABLE AT THIS POINT	The biller for the product or service is unreachable.
+031	BELOW MINIMUM QUANTITY ALLOWED	You are under-requesting for a service that has a limit on the quantity to be purchased per time.
+032	ABOVE MINIMUM QUANTITY ALLOWED	You are over-requesting for a service that has a limit on the quantity to be purchased per time.
+034	SERVICE SUSPENDED	The service being requested for has been suspended for the time being.
+035	SERVICE INACTIVE	You are requesting for a service that has been turned off at the moment.
+040	TRANSACTION REVERSAL	Transaction reversal to wallet
+083	SYSTEM ERROR	Oops!!! System error. Please contact tech support
+085	IMPROPER REQUEST ID: DOES NOT CONTAIN DATE	Request ID must contain valid date..
+IMPROPER REQUEST ID: NOT PROPER DATE FORMAT – FIRST 8 CHARACTERS MUST BE DATE (TODAY’S DATE – YYYYMMDD)	Request ID must contain a valid date format (YYYYMMDD).
+IMPROPER REQUEST ID: DATE NOT TODAY’S DATE – FIRST 8 CHARACTERS MUST BE TODAY’S DATE IN THIS FORMAT: YYYYMMDD	Request ID date must contain todays’s date.
+ 
+
+087	INVALID CREDENTIALS	Please verify your credentials and confirm that you are using the correct API authentication method as defined in your integration setup.
+089	
+REQUEST IS PROCESSING, PLEASE WAIT BEFORE MAKING ANOTHER REQUEST
+The system is still processing your previous request. Please wait until it is complete before sending another.
+Transaction Response Format
+This section contains the response format for [content][status] when the transactions are processed and the code “000” is returned.
+It determines the actual state of a processed transaction
+
+When the “code” parameter returns “000”, the following “status” is applicable.
+
+ 
+
+Response Code	Meaning	Note
+initiated	Transaction has been initiated	Transaction is initiated.
+pending	Transaction is pending.	Transaction is pending. This may happen when service provider has not concluded the transaction. This status will be updated. Please requery to get a final status.
+delivered	Transaction Successful	Transaction is successful and service is confirmed as delivered.
+
+
+
+

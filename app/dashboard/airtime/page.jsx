@@ -234,18 +234,31 @@ export default function AirtimePage() {
           message: `You have successfully purchased ₦${finalAmount.toLocaleString()} airtime for ${normalizeForApi(phoneNumber)}.`
         });
       } else {
+        // Categorized Error Handling
+        let title = "Purchase Failed";
+        let message = data.message || "We could not process your airtime purchase.";
+
+        if (data.category === "BUSINESS_ERROR") {
+          title = "Balance Issue";
+        } else if (data.category === "VALIDATION_ERROR") {
+          title = "Invalid Input";
+        } else if (data.category === "PROVIDER_ERROR") {
+          title = "Provider Error";
+          message = "The service provider is currently unavailable. Please try again later or choose another network.";
+        }
+
         setErrorModal({
           isOpen: true,
-          title: "Purchase Failed",
-          message: data.message || "We could not process your airtime purchase. Please check your balance and try again."
+          title,
+          message
         });
       }
     } catch (err) {
       console.error("Purchase error:", err);
       setErrorModal({
         isOpen: true,
-        title: "System Error",
-        message: err.message || "An error occurred while processing your request. Please try again later."
+        title: "Network Connection Error",
+        message: "Please check your internet connection and try again. If the problem persists, contact support."
       });
     } finally {
       setLoading(false);

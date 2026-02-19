@@ -105,6 +105,17 @@ export async function GET(request) {
         const result = await verifyPayment(reference);
 
         if (result.success && result.data.status === "success") {
+            // Find transaction and credit wallet if not already done
+            const transaction = await Transaction.findOne({ paystackReference: reference });
+            if (transaction && transaction.status === TRANSACTION_STATUS.PENDING) {
+                transaction.status = TRANSACTION_STATUS.SUCCESS;
+                await transaction.save();
+
+                const { fundWallet } = await import("@/services/walletService");
+                await fundWallet(transaction.userId, transaction.amount, reference);
+                console.log(`[PaystackRoute] Wallet credited via GET redirect for ${reference}`);
+            }
+
             return Response.redirect(new URL("/dashboard/fund-wallet?status=success&reference=" + reference, request.url));
         } else {
             return Response.redirect(new URL("/dashboard/fund-wallet?status=failed&reference=" + reference, request.url));

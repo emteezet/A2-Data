@@ -100,8 +100,12 @@ export async function handlePaystackWebhook(payload, signature) {
     transaction.status = TRANSACTION_STATUS.SUCCESS;
     await transaction.save();
 
-    if (transaction.type === TRANSACTION_TYPE.FUNDING) {
+    // Support both 'funding' and 'wallet_funding' types
+    const isFunding = transaction.type === TRANSACTION_TYPE.FUNDING || transaction.type === TRANSACTION_TYPE.WALLET_FUNDING;
+
+    if (isFunding) {
       // Credit user wallet
+      logger.info(`Crediting wallet for successful Paystack funding: ${data.reference}`, { userId: transaction.userId, amount: transaction.amount });
       await fundWallet(transaction.userId, transaction.amount, data.reference);
       return { success: true, transaction };
     }
